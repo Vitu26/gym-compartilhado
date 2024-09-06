@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sprylife/bloc/aluno/aluno_bloc.dart';
 import 'package:sprylife/bloc/categoriaExercicio/categoria_exercicio_bloc.dart';
+import 'package:sprylife/bloc/chat/chat_bloc.dart';
 import 'package:sprylife/bloc/exercicios/exericios_bloc.dart';
 import 'package:sprylife/bloc/exericioHasTreeino/treino_has_exercicio_bloc.dart';
 import 'package:sprylife/bloc/faturas/faturas_bloc.dart';
@@ -28,9 +29,12 @@ import 'package:sprylife/pages/personal/home_page_parsonal.dart';
 import 'package:sprylife/pages/personal/perfilpages/treinos/treinos_detalhe_page.dart';
 import 'package:sprylife/pages/pesquisar/filter_result.dart';
 import 'package:sprylife/pages/pesquisar/filter_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -71,6 +75,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<InformacoesComunsBloc>(
           create: (context) => InformacoesComunsBloc(),
+        ),
+        BlocProvider<ChatBloc>(
+          create: (context) => ChatBloc(),
         ),
       ],
       child: MaterialApp(

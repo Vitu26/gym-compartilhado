@@ -46,3 +46,27 @@ class GetTurmaDetails extends TurmaEvent {
   @override
   List<Object?> get props => [id];
 }
+
+
+class CheckTurmaExists extends TurmaEvent {
+  final String turmaName;
+  CheckTurmaExists(this.turmaName);
+}
+
+
+class AddStudentToTurma extends TurmaEvent {
+  final int turmaId;
+  final int alunoId;
+  AddStudentToTurma(this.turmaId, this.alunoId);
+}
+
+class CreateTurma extends TurmaEvent {
+  final Map<String, dynamic> turmaData;
+
+  CreateTurma(this.turmaData);
+
+  @override
+  List<Object> get props => [turmaData];
+}
+
+

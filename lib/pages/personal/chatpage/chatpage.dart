@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:sprylife/pages/aluno/chat/chat_interface.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sprylife/bloc/personal/personal_bloc.dart';
+import 'package:sprylife/bloc/personal/personal_event.dart';
+import 'package:sprylife/bloc/personal/personal_state.dart';
+import 'package:sprylife/pages/personal/chatpage/chat_screen_personal.dart';
 import 'package:sprylife/widgets/custom_appbar_princi.dart';
 
 class ChatPage extends StatelessWidget {
-  final GlobalKey<NavigatorState> navigatorKey;
-
-  const ChatPage({super.key, required this.navigatorKey});
-  
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,47 +14,78 @@ class ChatPage extends StatelessWidget {
       appBar: CustomAppBarPrinci(
         title: "Lista de Conversas",
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(8.0),
-        itemCount: 6, // Exemplo com 6 chats
-        separatorBuilder: (context, index) => Divider(),
-        itemBuilder: (context, index) {
-          return ListTile(
-            leading: CircleAvatar(
-              radius: 25,
-              backgroundImage: NetworkImage(
-                  'https://via.placeholder.com/150'), // Exemplo de imagem
-            ),
-            title: Text(
-              'Nome do Usuário $index',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Última mensagem...',
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  '10:35 PM', // Exemplo de horário fixo
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-              ],
-            ),
-            trailing: Icon(Icons.chevron_right),
-            onTap: () {
+      body: BlocProvider(
+        create: (context) => PersonalBloc()..add(GetPersonalLogado()), // Buscar personal logado
+        child: BlocBuilder<PersonalBloc, PersonalState>(
+          builder: (context, personalState) {
+            if (personalState is PersonalLoading) {
+              return Center(child: CircularProgressIndicator()); // Indicador de carregamento
+            } else if (personalState is PersonalSuccess) {
+              final personalData = personalState.data;
 
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChatScreen(), // Sua tela de chat
-                ),
-              );
-            },
-          );
-        }
+              // Verifique se personalData contém a lista de alunos associados
+              if (personalData.containsKey('alunos') && personalData['alunos'] is List) {
+                final List<dynamic> alunosList = personalData['alunos'];
+
+                if (alunosList.isEmpty) {
+                  return Center(child: Text('Nenhum aluno disponível.'));
+                }
+
+                return ListView.builder(
+                  itemCount: alunosList.length,
+                  itemBuilder: (context, index) {
+                    final aluno = alunosList[index];
+
+                    return ListTile(
+                      leading: CircleAvatar(
+                        radius: 25,
+                        backgroundImage: aluno['foto'] != null && aluno['foto'] != ""
+                            ? NetworkImage(aluno['foto'])
+                            : AssetImage('images/default_placeholder.jpg'), // Placeholder padrão
+                      ),
+                      title: Text(
+                        aluno['nome'] ?? 'Nome do Aluno',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Última mensagem...',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            '10:35 PM', // Exemplo de horário fixo
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                      trailing: Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatScreenPersonal(
+                              senderId: personalData['id'].toString(), // ID do personal logado
+                              receiverId: aluno['id'].toString(), // ID do aluno clicado
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              } else {
+                return Center(child: Text('Nenhum aluno associado ao personal.'));
+              }
+            } else if (personalState is PersonalFailure) {
+              return Center(child: Text('Erro ao carregar personal: ${personalState.error}'));
+            } else {
+              return Center(child: CircularProgressIndicator());
+            }
+          },
+        ),
       ),
     );
   }

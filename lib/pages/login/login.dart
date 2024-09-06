@@ -216,15 +216,24 @@ class LoginScreen extends StatelessWidget {
     // Listener para tratar a resposta do login como aluno
     BlocProvider.of<AlunoBloc>(context).stream.listen((alunoState) {
       try {
+        print("Resposta da API para aluno: ${alunoState}");
+
         if (alunoState is AlunoFailure) {
           _showDialog(context, 'Erro no login', 'Login como Aluno falhou.');
         } else if (alunoState is AlunoSuccess) {
-          if (alunoState.data['table'] == 'alunos') {
-            final alunoData = alunoState.data['data'];
-            Navigator.of(context).push(MaterialPageRoute(
+          print("Dados recebidos no login do aluno: ${alunoState.data}");
+
+          // Verifica se a chave 'id' e 'nome' existem nos dados
+          if (alunoState.data.containsKey('id') &&
+              alunoState.data.containsKey('nome')) {
+            final alunoData = alunoState.data;
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
                 builder: (context) => NavBarAluno(
-                      alunoData: alunoData,
-                    )));
+                  alunoData: alunoData,
+                ),
+              ),
+            );
           } else {
             _showDialog(
                 context, 'Erro inesperado', 'Erro inesperado durante o login.');
@@ -245,15 +254,24 @@ class LoginScreen extends StatelessWidget {
     // Listener para tratar a resposta do login como personal
     BlocProvider.of<PersonalBloc>(context).stream.listen((personalState) {
       try {
+        print("Resposta da API para personal: ${personalState}");
+
         if (personalState is PersonalFailure) {
           _showDialog(context, 'Erro no login', 'Login como Personal falhou.');
         } else if (personalState is PersonalSuccess) {
-          if (personalState.data['table'] == 'personals') {
+          print("Dados recebidos no login do personal: ${personalState.data}");
+
+          // Verifica se a chave 'id' e 'nome' existem nos dados
+          if (personalState.data.containsKey('id') &&
+              personalState.data.containsKey('nome')) {
             final personalData = personalState.data;
-            Navigator.of(context).push(MaterialPageRoute(
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
                 builder: (context) => NavBarPersonal(
-                      personalData: personalData,
-                    )));
+                  personalData: personalData,
+                ),
+              ),
+            );
           } else {
             _showDialog(
                 context, 'Erro inesperado', 'Erro inesperado durante o login.');

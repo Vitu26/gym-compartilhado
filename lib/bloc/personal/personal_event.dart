@@ -113,3 +113,7 @@ class UpdatePersonalProfile extends PersonalEvent {
 }
 class FetchTopPersonais extends PersonalEvent {}
 
+class GetPersonalLogado extends PersonalEvent {}
+
+
+

@@ -71,3 +71,5 @@ class FetchModalidades extends AlunoEvent {}
 class FetchNiveisAtividade extends AlunoEvent {}
 
 class FetchAllData extends AlunoEvent {}
+
+class GetAlunoLogado extends AlunoEvent {}

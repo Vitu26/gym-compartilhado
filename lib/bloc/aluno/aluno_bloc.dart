@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:sprylife/bloc/aluno/aluno_evet.dart';
 import 'package:sprylife/bloc/aluno/aluno_state.dart';
@@ -18,6 +19,7 @@ class AlunoBloc extends Bloc<AlunoEvent, AlunoState> {
     on<FetchObjetivos>(_onFetchObjetivos);
     on<FetchModalidades>(_onFetchModalidades);
     on<FetchNiveisAtividade>(_onFetchNiveisAtividade);
+    on<GetAlunoLogado>(_onGetAlunoLogado);
   }
 
   @override
@@ -26,6 +28,8 @@ class AlunoBloc extends Bloc<AlunoEvent, AlunoState> {
       yield* _mapFetchAllDataToState();
     }
   }
+
+  
 
   Stream<AlunoState> _mapFetchAllDataToState() async* {
     try {
@@ -54,53 +58,56 @@ class AlunoBloc extends Bloc<AlunoEvent, AlunoState> {
   }
 
   Future<void> _onAlunoLogin(AlunoLogin event, Emitter<AlunoState> emit) async {
-    emit(AlunoLoading());
+  emit(AlunoLoading());
 
-    try {
-      // Log da requisição sendo enviada
-      print('Iniciando login para o aluno...');
-      print(
-          'Dados enviados: {email: ${event.email}, password: ${event.password}}');
-          final token = await getToken();
+  try {
+    print('Iniciando login para o aluno...');
+    print('Dados enviados: {email: ${event.email}, password: ${event.password}}');
+    final token = await getToken();
 
-      final response = await http.post(
-        Uri.parse('https://developerxpb.com.br/api/autentication/login'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'email': event.email,
-          'password': event.password,
-        }),
-      );
+    final response = await http.post(
+      Uri.parse('https://developerxpb.com.br/api/autentication/login'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'email': event.email,
+        'password': event.password,
+      }),
+    );
 
-      // Log do status da resposta e do corpo da resposta
-      print('Status da resposta HTTP: ${response.statusCode}');
-      print('Corpo da resposta: ${response.body}');
+    print('Status da resposta HTTP: ${response.statusCode}');
+    print('Corpo da resposta: ${response.body}');
+    
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
 
-        // Log verificando a presença do token na resposta
-        if (data.containsKey('token')) {
-          final token = data['token'];
-          print('Token JWT obtido: $token');
-          await saveToken(token);
-        } else {
-          print('Aviso: Nenhum token encontrado na resposta.');
-        }
-        emit(AlunoSuccess(data));
+      // Verifica se a chave 'data' está presente e contém o aluno
+      if (data.containsKey('data') && data['data'] != null) {
+        final alunoData = data['data'];
+
+        // Salva o aluno logado localmente
+        await saveAlunoLogado(
+            alunoData['id'].toString(), alunoData['nome']);
+        print('Aluno logado salvo: ID: ${alunoData['id']}, Nome: ${alunoData['nome']}');
+        
+
+        emit(AlunoSuccess(alunoData)); // Emitindo o sucesso com os dados do aluno
       } else {
-        emit(AlunoFailure(
-            'Login falhou com status: ${response.statusCode}, resposta: ${response.body}'));
+        emit(AlunoFailure('Dados do aluno não encontrados na resposta da API.'));
       }
-    } catch (e) {
-      // Log do erro capturado
-      print('Exceção durante o login: $e');
-      emit(AlunoFailure('Login falhou com exceção: $e'));
+    } else {
+      emit(AlunoFailure(
+          'Login falhou com status: ${response.statusCode}, resposta: ${response.body}'));
     }
+  } catch (e) {
+    print('Exceção durante o login: $e');
+    emit(AlunoFailure('Login falhou com exceção: $e'));
   }
+}
+
 
   Future<void> _onAlunoCadastro(
       AlunoCadastro event, Emitter<AlunoState> emit) async {
@@ -369,3 +376,40 @@ Future<void> _onUpdateAluno(UpdateAluno event, Emitter<AlunoState> emit) async {
     }
   }
 }
+
+Future<void> _onGetAlunoLogado(GetAlunoLogado event, Emitter<AlunoState> emit) async {
+    try {
+      final alunoData = await getAlunoLogado(); // Busca o aluno logado do SharedPreferences
+      emit(AlunoSuccess(alunoData)); // Emite sucesso com os dados do aluno
+    } catch (e) {
+      emit(AlunoFailure('Erro ao buscar aluno logado: $e'));
+    }
+  }
+
+  // Função para salvar os dados do aluno no SharedPreferences
+  Future<void> saveAlunoLogado(String id, String nome) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('aluno_id', id);
+    await prefs.setString('aluno_nome', nome);
+  }
+
+  // Função para buscar os dados do aluno logado no SharedPreferences
+  Future<Map<String, dynamic>> getAlunoLogado() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? alunoId = prefs.getString('aluno_id');
+    final String? alunoNome = prefs.getString('aluno_nome');
+
+    if (alunoId != null && alunoNome != null) {
+      return {
+        'id': alunoId,
+        'nome': alunoNome,
+      };
+    } else {
+      throw Exception('Nenhum aluno logado encontrado');
+    }
+  }
+
+
+
+
+

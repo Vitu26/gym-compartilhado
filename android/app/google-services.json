@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1066538231930",
+    "project_id": "sprylife-41e5a",
+    "storage_bucket": "sprylife-41e5a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1066538231930:android:bf1acd5ca7fe7cbdb673c3",
+        "android_client_info": {
+          "package_name": "br.com.sprylife.sprylife"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLrS3DTYs1-OOjB6tBgMabdDx97liAdRY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

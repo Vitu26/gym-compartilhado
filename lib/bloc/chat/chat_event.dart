@@ -1,25 +1,25 @@
-import 'package:equatable/equatable.dart';
-
-abstract class ChatEvent extends Equatable {
-  @override
-  List<Object?> get props => [];
-}
+// chat_event.dart
+abstract class ChatEvent {}
 
 class LoadMessages extends ChatEvent {
-  final String chatId;
+  final String senderId;
+  final String receiverId;
 
-  LoadMessages(this.chatId);
-
-  @override
-  List<Object?> get props => [chatId];
+  LoadMessages({required this.senderId, required this.receiverId});
 }
 
 class SendMessage extends ChatEvent {
-  final String chatId;
+  final String senderId;
+  final String receiverId;
   final String message;
 
-  SendMessage(this.chatId, this.message);
+  SendMessage({required this.senderId, required this.receiverId, required this.message});
+}
 
-  @override
-  List<Object?> get props => [chatId, message];
+class MessageReceived extends ChatEvent {
+  final String senderId;
+  final String receiverId;
+  final String message;
+
+  MessageReceived({required this.senderId, required this.receiverId, required this.message});
 }

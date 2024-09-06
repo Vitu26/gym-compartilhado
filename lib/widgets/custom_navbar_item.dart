@@ -16,39 +16,22 @@ class CustomNavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double iconSize = 20;  // Reduced icon size
+    double iconSize = 24;  // Ajuste do tamanho do ícone
     Color selectedColor = Color(0xFF2163E8);
     Color unselectedColor = Colors.grey;
 
-    return Expanded(  // Ensure each item takes up the available space
+    return Expanded(  // Garantir que cada item ocupe o espaço disponível
       child: GestureDetector(
         onTap: onTap,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                if (isSelected)
-                  Positioned(
-                    top: -20,  // Increase the distance between icon and circle
-                    child: Container(
-                      width: 32,  // Circle size remains similar but slightly bigger
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: selectedColor.withOpacity(0.2),  // Transparent background
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                Icon(
-                  icon,
-                  size: iconSize,  // Icon size reduced slightly
-                  color: isSelected ? selectedColor : unselectedColor,
-                ),
-              ],
+            Icon(
+              icon,
+              size: iconSize,  // Tamanho do ícone
+              color: isSelected ? selectedColor : unselectedColor,
             ),
-            SizedBox(height: 6),  // Increased gap between icon and label
+            SizedBox(height: 6),  // Espaçamento entre o ícone e o texto
             Text(
               label,
               style: TextStyle(
@@ -63,6 +46,3 @@ class CustomNavBarItem extends StatelessWidget {
     );
   }
 }
-
-
-

@@ -9,13 +9,12 @@ import 'package:sprylife/pages/personal/perfilpages/perfil_page.dart';
 import 'package:sprylife/pages/personal/whatsapp/whatsapp_page.dart';
 import 'package:sprylife/widgets/custom_navbar_item.dart';
 import 'package:sprylife/models/model_tudo.dart';
+import 'package:url_launcher/url_launcher.dart'; // Importando o pacote url_launcher
 
 class NavBarPersonal extends StatefulWidget {
   final Map<String, dynamic> personalData;
-  
 
-  const NavBarPersonal({Key? key, required this.personalData})
-      : super(key: key);
+  const NavBarPersonal({Key? key, required this.personalData}) : super(key: key);
 
   @override
   State<NavBarPersonal> createState() => _NavBarStatePersonal();
@@ -40,6 +39,18 @@ class _NavBarStatePersonal extends State<NavBarPersonal> {
     }
   }
 
+  Future<void> _openWhatsApp() async {
+    final String phoneNumber = "5581999999999"; // Coloque o número de telefone desejado aqui
+    final String message = "Olá, gostaria de conversar!"; // Mensagem desejada
+    final String url = "https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}";
+
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Não foi possível abrir o WhatsApp';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Certifique-se de que todos os campos obrigatórios estão presentes
@@ -51,8 +62,7 @@ class _NavBarStatePersonal extends State<NavBarPersonal> {
         create: (_) => TurmaBloc(), // Criando o TurmaBloc aqui
         child: Scaffold(
           body: Stack(
-            children:
-                List.generate(5, (index) => _buildOffstageNavigator(index)),
+            children: List.generate(5, (index) => _buildOffstageNavigator(index)),
           ),
           bottomNavigationBar: Container(
             height: 70,
@@ -65,7 +75,7 @@ class _NavBarStatePersonal extends State<NavBarPersonal> {
                   label: 'Suporte',
                   isSelected: _selectedIndex == 0,
                   onTap: () {
-                    _onItemTapped(0);
+                    _openWhatsApp(); // Abre o WhatsApp com o número e mensagem
                     FocusScope.of(context).unfocus();
                   },
                 ),
@@ -143,14 +153,13 @@ class _NavBarStatePersonal extends State<NavBarPersonal> {
               );
             case 3:
               return MaterialPageRoute(
-                builder: (context) => ChatPage(navigatorKey: _navigatorKeys[3]),
+                builder: (context) => ChatPage(),
               );
             case 4:
               return MaterialPageRoute(
                 builder: (context) => PerfilPage(
                   navigatorKey: _navigatorKeys[4],
                   personalData: widget.personalData,
-                  
                 ),
               );
             default:
@@ -159,8 +168,7 @@ class _NavBarStatePersonal extends State<NavBarPersonal> {
                   navigatorKey: _navigatorKeys[4],
                   personalData: {
                     ...widget.personalData,
-                    'id': widget.personalData['id']
-                        .toString(), // Certifique-se de que o ID está como String
+                    'id': widget.personalData['id'].toString(), // Certifique-se de que o ID está como String
                   },
                 ),
               );

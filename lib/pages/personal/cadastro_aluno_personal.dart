@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,13 +7,21 @@ import 'package:sprylife/bloc/aluno/aluno_bloc.dart';
 import 'package:sprylife/bloc/aluno/aluno_evet.dart';
 import 'package:sprylife/bloc/informa%C3%A7%C3%B5es_comum/informacoes_comum_bloc.dart';
 import 'package:sprylife/bloc/informa%C3%A7%C3%B5es_comum/informacoes_comum_event.dart';
-import 'package:sprylife/bloc/informa%C3%A7%C3%B5es_comum/informacoes_comum_state.dart'; // Import do InformacoesComunsBloc
+import 'package:sprylife/bloc/informa%C3%A7%C3%B5es_comum/informacoes_comum_state.dart';
+import 'package:sprylife/bloc/personal/personal_bloc.dart';
+import 'package:sprylife/bloc/personal/personal_state.dart';
+import 'package:sprylife/bloc/turmas/tumas_bloc.dart';
+import 'package:sprylife/bloc/turmas/turma_event.dart';
+import 'package:sprylife/bloc/turmas/turma_state.dart';
+import 'package:sprylife/models/model_tudo.dart';
 import 'package:sprylife/utils/colors.dart';
+import 'package:sprylife/utils/token_storege.dart';
 import 'package:sprylife/widgets/custom_appbar.dart';
 import 'package:sprylife/widgets/custom_button.dart';
 import 'package:sprylife/widgets/textfield.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:sprylife/widgets/textfield_login.dart';
+import 'package:http/http.dart' as http;
 
 class CadastroAlunoPersonalScreen extends StatefulWidget {
   @override
@@ -24,11 +33,10 @@ class _CadastroAlunoPersonalScreenState
     extends State<CadastroAlunoPersonalScreen> {
   // Controladores de texto
   final TextEditingController nomeController = TextEditingController();
-  final TextEditingController nomeSocialController = TextEditingController(); // Adicionando nome social
+  final TextEditingController nomeSocialController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController dataNascimentoController =
       TextEditingController();
-  final TextEditingController whatsappController = TextEditingController();
   final TextEditingController senhaController = TextEditingController();
   final TextEditingController telefoneController = TextEditingController();
 
@@ -47,10 +55,9 @@ class _CadastroAlunoPersonalScreenState
   @override
   void dispose() {
     nomeController.dispose();
-    nomeSocialController.dispose(); // Dispose do nome social
+    nomeSocialController.dispose();
     emailController.dispose();
     dataNascimentoController.dispose();
-    whatsappController.dispose();
     senhaController.dispose();
     telefoneController.dispose();
     super.dispose();
@@ -67,118 +74,138 @@ class _CadastroAlunoPersonalScreenState
         appBar: CustomAppBar(
           title: 'Cadastrar Aluno',
         ),
-        body: SingleChildScrollView(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildCustomTextField(
-                label: 'Nome',
-                controller: nomeController,
+        body: BlocConsumer<InformacoesComunsBloc, InformacoesComunsState>(
+          listener: (context, state) {
+            if (state is InformacoesComunsCreated) {
+              final alunoData = {
+                'nome': nomeController.text,
+                'nome_social': nomeSocialController.text,
+                'email': emailController.text,
+                'password': senhaController.text,
+                'informacoes-comuns_id': state.id,
+              };
+              // Disparando o evento de cadastro de aluno
+              context.read<AlunoBloc>().add(AlunoCadastro(alunoData));
+            } else if (state is InformacoesComunsError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text(
+                        'Erro ao criar as informações comuns: ${state.error}')),
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state is InformacoesComunsLoading) {
+              return Center(child: CircularProgressIndicator());
+            }
+            return SingleChildScrollView(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildCustomTextField(
+                    label: 'Nome',
+                    controller: nomeController,
+                  ),
+                  _buildCustomTextField(
+                    label: 'Nome Social',
+                    controller: nomeSocialController,
+                  ),
+                  _buildCustomTextField(
+                    label: 'E-mail',
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  _buildCustomTextField(
+                    label: 'Senha',
+                    controller: senhaController,
+                    obscureText: true,
+                  ),
+                  _buildCustomTextField(
+                    label: 'Data de nascimento',
+                    controller: dataNascimentoController,
+                    keyboardType: TextInputType.datetime,
+                    inputFormatters: [maskFormatterDataNascimento],
+                  ),
+                  _buildDropdownField(
+                    label: 'Gênero',
+                    items: {
+                      'Masculino': 'Masculino',
+                      'Feminino': 'Feminino',
+                      'Não Informar': 'Não Informar',
+                    },
+                    onChanged: (value) {
+                      setState(() {
+                        genero = value;
+                      });
+                    },
+                  ),
+                  _buildDropdownField(
+                    label: 'Objetivo',
+                    items: {
+                      '1': 'Redução gordura/aumento massa muscular',
+                      '2': 'Condicionamento físico ou performance',
+                      '3': 'Aumento da massa muscular',
+                      '4': 'Redução de gordura',
+                      '5': 'Qualidade de vida & saúde',
+                      '6': 'Definição muscular',
+                    },
+                    onChanged: (value) {
+                      setState(() {
+                        objetivoId = int.tryParse(value!);
+                      });
+                    },
+                  ),
+                  _buildDropdownField(
+                    label: 'Nível de Atividade',
+                    items: {
+                      '1': 'Iniciante',
+                      '2': 'Intermediário',
+                      '3': 'Avançado',
+                      '4': 'Altamente Treinado',
+                      '5': 'Atleta',
+                    },
+                    onChanged: (value) {
+                      setState(() {
+                        nivelAtividadeId = int.tryParse(value!);
+                      });
+                    },
+                  ),
+                  _buildDropdownField(
+                    label: 'Modalidade',
+                    items: {
+                      '1': 'Musculação',
+                      '2': 'Funcional',
+                      '3': 'Pilates',
+                      '4': 'Corrida',
+                      '5': 'Luta',
+                      '6': 'Dança',
+                      '7': 'Natação',
+                    },
+                    onChanged: (value) {
+                      setState(() {
+                        modalidadeAlunoId = int.tryParse(value!);
+                      });
+                    },
+                  ),
+                  _buildCustomTextField(
+                    label: 'Telefone',
+                    controller: telefoneController,
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [maskFormatterTelefone],
+                  ),
+                  SizedBox(height: 20),
+                  Center(
+                    child: CustomButton(
+                      text: 'Salvar',
+                      backgroundColor: personalColor,
+                      onPressed: () => _cadastrarAluno(context),
+                    ),
+                  ),
+                ],
               ),
-              _buildCustomTextField(
-                label: 'Nome Social', // Campo para nome social
-                controller: nomeSocialController,
-              ),
-              _buildCustomTextField(
-                label: 'E-mail',
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-              ),
-              _buildCustomTextField(
-                label: 'Senha',
-                controller: senhaController,
-                obscureText: true,
-              ),
-              _buildCustomTextField(
-                label: 'Data de nascimento',
-                controller: dataNascimentoController,
-                keyboardType: TextInputType.datetime,
-                inputFormatters: [maskFormatterDataNascimento],
-              ),
-              _buildCustomTextField(
-                label: 'WhatsApp',
-                controller: whatsappController,
-                keyboardType: TextInputType.phone,
-                inputFormatters: [maskFormatterTelefone],
-              ),
-              _buildDropdownField(
-                label: 'Gênero',
-                items: {
-                  'Masculino': 'Masculino',
-                  'Feminino': 'Feminino',
-                  'Não Informar': 'Não Informar'
-                },
-                onChanged: (value) {
-                  setState(() {
-                    genero = value;
-                  });
-                },
-              ),
-              _buildDropdownField(
-                label: 'Objetivo',
-                items: {
-                  '1': 'Redução de gordura e aumento da massa muscular',
-                  '2': 'Condicionamento físico ou performance',
-                  '3': 'Aumento da massa muscular',
-                  '4': 'Redução de gordura',
-                  '5': 'Qualidade de vida & saúde',
-                  '6': 'Definição muscular',
-                },
-                onChanged: (value) {
-                  setState(() {
-                    objetivoId = int.tryParse(value!);
-                  });
-                },
-              ),
-              _buildDropdownField(
-                label: 'Nível de Atividade',
-                items: {
-                  '1': 'Iniciante',
-                  '2': 'Intermediário',
-                  '3': 'Avançado',
-                  '4': 'Altamente Treinado',
-                  '5': 'Atleta',
-                },
-                onChanged: (value) {
-                  setState(() {
-                    nivelAtividadeId = int.tryParse(value!);
-                  });
-                },
-              ),
-              _buildDropdownField(
-                label: 'Modalidade',
-                items: {
-                  '1': 'Musculação',
-                  '2': 'Funcional',
-                  '3': 'Pilates',
-                  '4': 'Corrida',
-                  '5': 'Luta',
-                  '6': 'Dança',
-                  '7': 'Natação',
-                },
-                onChanged: (value) {
-                  setState(() {
-                    modalidadeAlunoId = int.tryParse(value!);
-                  });
-                },
-              ),
-              _buildCustomTextField(
-                label: 'Telefone',
-                controller: telefoneController,
-                keyboardType: TextInputType.phone,
-                inputFormatters: [maskFormatterTelefone],
-              ),
-              SizedBox(height: 20),
-              Center(
-                child: CustomButton(
-                  text: 'Salvar',
-                  backgroundColor: personalColor,
-                  onPressed: () => _cadastrarAluno(context),
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -212,9 +239,8 @@ class _CadastroAlunoPersonalScreenState
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: ConstrainedBox(
-        constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width -
-                32), // Ajuste a largura do dropdown
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 32),
         child: DropdownButtonFormField<String>(
           value: value,
           decoration: InputDecoration(
@@ -242,42 +268,75 @@ class _CadastroAlunoPersonalScreenState
     );
   }
 
-void _cadastrarAluno(BuildContext context) {
-  final informacoesComunsData = {
-    'sexo': genero,
-    'data-de-nascimento': DateFormat('yyyy-MM-dd').format(
-      DateFormat('dd/MM/yyyy').parse(dataNascimentoController.text),
-    ),
-    'objetivo_id': objetivoId,
-    'nivel-atividade_id': nivelAtividadeId,
-    'modalidade-aluno_id': modalidadeAlunoId,
-    'numero_telefone': telefoneController.text.replaceAll(RegExp(r'\D'), ''),
-  };
+  void _checkOrCreateAtivosGroup(BuildContext context, int alunoId) {
+    // Check if the "Ativos" turma exists
+    context.read<TurmaBloc>().add(CheckTurmaExists('Ativos'));
 
+    BlocListener<TurmaBloc, TurmaState>(
+      listener: (context, state) {
+        if (state is TurmaFound) {
+          // If the "Ativos" turma exists, add the student to it
+          context.read<TurmaBloc>().add(AddStudentToTurma(state.turma.id, alunoId));
+        } else if (state is TurmaNotFound) {
+          // If the "Ativos" turma does not exist, create it
+          final personalState = context.read<PersonalBloc>().state;
+          if (personalState is PersonalSuccess) {
+            final personalId = personalState.data['id']; // Personal ID fetched from bloc
+            final turmaData = {
+              'nome': 'Ativos',
+              'personal_id': personalId.toString(),
+            };
+            context.read<TurmaBloc>().add(CreateTurma(turmaData));
+          } else {
+            print('Personal data is not available.');
+          }
+        } else if (state is TurmaCreated) {
+          // Once the turma is created, add the student to it
+          context.read<TurmaBloc>().add(AddStudentToTurma(state.turma.id, alunoId));
+        }
+      },
+    );
+  }
 
+  void _cadastrarAluno(BuildContext context) {
+    final informacoesComunsData = {
+      'sexo': genero,
+      'data-de-nascimento': DateFormat('yyyy-MM-dd').format(
+        DateFormat('dd/MM/yyyy').parse(dataNascimentoController.text),
+      ),
+      'objetivo_id': objetivoId,
+      'nivel-atividade_id': nivelAtividadeId,
+      'modalidade-aluno_id': modalidadeAlunoId,
+      'table': 'alunos',
+      'reference_id': '',
+      'telefone': {
+        'numero': telefoneController.text.replaceAll(RegExp(r'\D'), ''),
+        'tipo': tipoTelefone ?? 'celular',
+      }
+    };
 
-    // Disparando evento para criar as informações comuns
-    context.read<InformacoesComunsBloc>().add(CreateInformacoesComuns(informacoesComunsData));
+    // Create the common information
+    context
+        .read<InformacoesComunsBloc>()
+        .add(CreateInformacoesComuns(informacoesComunsData));
 
-    // Escutando o estado do InformacoesComunsBloc
     BlocListener<InformacoesComunsBloc, InformacoesComunsState>(
       listener: (context, state) {
         if (state is InformacoesComunsCreated) {
-          // Se as informações comuns foram criadas com sucesso, agora criamos o aluno
+          // Once common information is created, register the student
           final alunoData = {
             'nome': nomeController.text,
             'nome_social': nomeSocialController.text,
             'email': emailController.text,
             'password': senhaController.text,
-            'informacoes-comuns_id': state.id,  // Usar o ID retornado
+            'informacoes-comuns_id': state.id,
           };
 
+          // Dispatch the student registration event
           context.read<AlunoBloc>().add(AlunoCadastro(alunoData));
-        } else if (state is InformacoesComunsError) {
-          // Exibir erro de criação das informações comuns
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erro ao criar as informações comuns: ${state.error}')),
-          );
+
+          // Check if "Ativos" group exists, and add student to it
+          _checkOrCreateAtivosGroup(context, state.id);
         }
       },
     );

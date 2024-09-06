@@ -1,27 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sprylife/bloc/aluno/aluno_bloc.dart';
 import 'package:sprylife/bloc/chat/chat_bloc.dart';
 import 'package:sprylife/bloc/chat/chat_event.dart';
 import 'package:sprylife/bloc/chat/chat_state.dart';
-import 'package:sprylife/bloc/personal/personal_bloc.dart';
-import 'package:sprylife/bloc/personal/personal_event.dart';
-import 'package:sprylife/bloc/personal/personal_state.dart';
 import 'package:sprylife/widgets/custom_appbar.dart';
-import 'package:sprylife/widgets/custom_appbar_princi.dart';
 
-class ChatScreen extends StatelessWidget {
+class ChatScreenPersonal extends StatelessWidget {
   final String senderId;
   final String receiverId;
-  final Map<String, dynamic> alunoData;
 
-  ChatScreen({
-    required this.senderId,
-    required this.receiverId,
-    required this.alunoData,
-  });
+  ChatScreenPersonal({required this.senderId, required this.receiverId});
 
- @override
+  @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ChatBloc()
@@ -105,14 +95,14 @@ class ChatScreen extends StatelessWidget {
                 }
               },
             )),
-            _buildMessageInput(context, receiverId),
+            _buildMessageInput(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMessageInput(BuildContext context, String receiverId) {
+  Widget _buildMessageInput(BuildContext context) {
     final TextEditingController _controller = TextEditingController();
 
     return Padding(
@@ -136,8 +126,8 @@ class ChatScreen extends StatelessWidget {
             onPressed: () {
               if (_controller.text.isNotEmpty) {
                 BlocProvider.of<ChatBloc>(context).add(SendMessage(
-                  senderId: senderId, // Usando o senderId do aluno logado
-                  receiverId: receiverId, // ID do personal
+                  senderId: senderId,
+                  receiverId: receiverId,
                   message: _controller.text,
                 ));
                 _controller.clear(); // Limpa o campo de texto após o envio

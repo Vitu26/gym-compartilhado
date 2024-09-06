@@ -4,6 +4,7 @@ import 'package:sprylife/bloc/rotinaTreino/rotina_treino_bloc.dart';
 import 'package:sprylife/bloc/rotinaTreino/rotina_treino_event.dart';
 import 'package:sprylife/utils/colors.dart';
 import 'package:sprylife/widgets/custom_appbar.dart';
+import 'package:sprylife/widgets/custom_button.dart';
 
 class CriarRotinaDeTreinoScreen extends StatelessWidget {
   final String personalId;
@@ -39,7 +40,6 @@ class CriarRotinaDeTreinoScreen extends StatelessWidget {
     return Scaffold(
       appBar: CustomAppBar(
         title: isEditing ? 'Editar Rotina de Treino' : 'Criar Rotina de Treino',
-        backgroundColor: personalColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -164,9 +164,7 @@ class CriarRotinaDeTreinoScreen extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 30),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
+              CustomButton(text: 'Salvar', backgroundColor: personalColor, onPressed: () {
                     if (_validateForm()) {
                       final rotinaData = {
                         'tipo-treino_id': int.parse(tipoTreino),
@@ -189,25 +187,16 @@ class CriarRotinaDeTreinoScreen extends StatelessWidget {
                       } else {
                         context.read<RotinaDeTreinoBloc>().add(CreateRotinaDeTreino(rotinaData));
                       }
-                      Navigator.of(context).pop();
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Por favor, preencha todos os campos obrigatórios'),
-                        ),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                    backgroundColor: personalColor,
-                  ),
-                  child: Text('Salvar', style: TextStyle(fontSize: 16)),
-                ),
-              ),
+                      Navigator.of(context).pop(true);
+                    } 
+                    // else {
+                    //   ScaffoldMessenger.of(context).showSnackBar(
+                    //     SnackBar(
+                    //       content: Text('Por favor, preencha todos os campos obrigatórios'),
+                    //     ),
+                    //   );
+                    // }
+                  },)
             ],
           ),
         ),
@@ -218,7 +207,7 @@ class CriarRotinaDeTreinoScreen extends StatelessWidget {
   String _getObjetivoLabel(int id) {
     switch (id) {
       case 1:
-        return 'Redução de gordura e aumento da massa muscular';
+        return 'Redução gordura/aumento massa muscular';
       case 2:
         return 'Condicionamento físico ou performance';
       case 3:

@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:sprylife/bloc/personal/personal_event.dart';
 import 'package:sprylife/bloc/personal/personal_state.dart';
@@ -16,70 +17,104 @@ class PersonalBloc extends Bloc<PersonalEvent, PersonalState> {
     on<GetPersonalPassword>(_onGetPersonalPassword);
     on<UpdatePersonalPassword>(_onUpdatePersonalPassword);
     on<UpdatePersonalProfile>(_onUpdatePersonalProfile);
+    on<GetPersonalLogado>(_onGetPersonalLogado);
   }
 
   // Login do Personal
-  Future<void> _onPersonalLogin(
-      PersonalLogin event, Emitter<PersonalState> emit) async {
-    emit(PersonalLoading()); // Emitindo estado de carregamento
-    try {
-      print('Iniciando processo de login...');
-      final token = await getToken(); // Obtendo o token
-      print('Token obtido: $token');
+Future<void> _onPersonalLogin(
+    PersonalLogin event, Emitter<PersonalState> emit) async {
+  emit(PersonalLoading()); // Emitindo estado de carregamento
+  try {
+    print('Iniciando processo de login...');
+    final token = await getToken(); // Obtendo o token
+    print('Token obtido: $token');
 
-      final response = await http.post(
-        Uri.parse('https://developerxpb.com.br/api/autentication/login'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'email': event.email,
-          'password': event.password,
-        }),
-      );
+    final response = await http.post(
+      Uri.parse('https://developerxpb.com.br/api/autentication/login'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'email': event.email,
+        'password': event.password,
+      }),
+    );
 
-      print('Status da resposta: ${response.statusCode}');
-      print('Corpo da resposta: ${response.body}');
+    print('Status da resposta: ${response.statusCode}');
+    print('Corpo da resposta: ${response.body}');
 
-      if (response.statusCode == 200) {
-        final decodedResponse = jsonDecode(response.body);
-        print('Chaves do objeto data: ${decodedResponse.keys}');
+    if (response.statusCode == 200) {
+      final decodedResponse = jsonDecode(response.body);
+      print('Chaves do objeto data: ${decodedResponse.keys}');
 
-        final String? table = decodedResponse['table'] as String?;
-        final Map<String, dynamic>? professionalData =
-            decodedResponse['data'] as Map<String, dynamic>?;
+      final String? table = decodedResponse['table'] as String?;
+      final Map<String, dynamic>? personalData =
+          decodedResponse['data'] as Map<String, dynamic>?;
 
-        // Verifique se as variáveis 'table' e 'professionalData' não são nulas
-        if (table != null && professionalData != null) {
-          print('Tipo de "table": ${table.runtimeType}');
-          print('Tipo de "data": ${professionalData.runtimeType}');
-          print('Conteúdo de "data": $professionalData');
+      if (table != null && personalData != null) {
+        print('Tipo de "table": ${table.runtimeType}');
+        print('Tipo de "data": ${personalData.runtimeType}');
+        print('Conteúdo de "data": $personalData');
 
-          if (table == 'personals') {
-            emit(PersonalSuccess(
-                professionalData)); // Emite sucesso com os dados do personal
-          } else {
-            print(
-                "Erro: Estrutura de resposta inesperada. Esperava 'personals' como table.");
-            emit(PersonalFailure(
-                'Erro: Estrutura de resposta inesperada. Esperava "personals" como table.'));
-          }
+        if (table == 'personals') {
+          // Salva o personal logado localmente
+          await savePersonalLogado(
+              personalData['id'].toString(), personalData['nome']);
+          print('Personal logado salvo: ID: ${personalData['id']}, Nome: ${personalData['nome']}');
+
+          emit(PersonalSuccess(personalData)); // Emite sucesso com os dados do personal
         } else {
-          print("Erro: 'table' ou 'data' são nulos.");
-          emit(PersonalFailure(
-              'Erro: Estrutura de resposta inesperada. Esperava "table" e "data".'));
+          print("Erro: Estrutura de resposta inesperada. Esperava 'personals' como table.");
+          emit(const PersonalFailure('Erro: Estrutura de resposta inesperada. Esperava "personals" como table.'));
         }
       } else {
-        print('Erro: Login falhou com status: ${response.statusCode}');
-        emit(
-            PersonalFailure('Login falhou com status: ${response.statusCode}'));
+        print("Erro: 'table' ou 'data' são nulos.");
+        emit(const PersonalFailure('Erro: Estrutura de resposta inesperada. Esperava "table" e "data".'));
       }
-    } catch (e) {
-      print('Exceção durante o login: $e');
-      emit(PersonalFailure('Login falhou com exceção: $e'));
+    } else {
+      print('Erro: Login falhou com status: ${response.statusCode}');
+      emit(PersonalFailure('Login falhou com status: ${response.statusCode}'));
     }
+  } catch (e) {
+    print('Exceção durante o login: $e');
+    emit(PersonalFailure('Login falhou com exceção: $e'));
   }
+}
+
+// Função para salvar os dados do personal no SharedPreferences
+Future<void> savePersonalLogado(String id, String nome) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString('personal_id', id);
+  await prefs.setString('personal_nome', nome);
+}
+
+// Função para buscar os dados do personal logado no SharedPreferences
+Future<Map<String, dynamic>> getPersonalLogado() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final String? personalId = prefs.getString('personal_id');
+  final String? personalNome = prefs.getString('personal_nome');
+
+  if (personalId != null && personalNome != null) {
+    return {
+      'id': personalId,
+      'nome': personalNome,
+    };
+  } else {
+    throw Exception('Nenhum personal logado encontrado');
+  }
+}
+
+// Função para obter os dados do personal logado
+Future<void> _onGetPersonalLogado(GetPersonalLogado event, Emitter<PersonalState> emit) async {
+  try {
+    final personalData = await getPersonalLogado(); // Busca o personal logado do SharedPreferences
+    emit(PersonalSuccess(personalData)); // Emite sucesso com os dados do personal
+  } catch (e) {
+    emit(PersonalFailure('Erro ao buscar personal logado: $e'));
+  }
+}
+
 
   Future<void> _onPersonalCadastro(
       PersonalCadastro event, Emitter<PersonalState> emit) async {
@@ -105,13 +140,13 @@ class PersonalBloc extends Bloc<PersonalEvent, PersonalState> {
         print("Dados do personal recebidos: $data");
         emit(PersonalSuccess(data)); // Emite sucesso com os dados do personal
         if (data['data'] == null) {
-          emit(PersonalFailure('Erro: Dados do personal não encontrados.'));
+          emit(const PersonalFailure('Erro: Dados do personal não encontrados.'));
         } else {
           emit(PersonalSuccess(data['data']));
         }
       } else {
         print("Falha ao cadastrar o personal");
-        emit(PersonalFailure('Cadastro falhou'));
+        emit(const PersonalFailure('Cadastro falhou'));
       }
     } catch (e) {
       print("Erro ao cadastrar o personal: $e");
@@ -152,7 +187,7 @@ class PersonalBloc extends Bloc<PersonalEvent, PersonalState> {
         final data = jsonDecode(response.body);
         emit(PersonalSuccess(data)); // Emite sucesso com os dados dos personais
       } else {
-        emit(PersonalFailure('Falha ao obter personal'));
+        emit(const PersonalFailure('Falha ao obter personal'));
       }
     } catch (e) {
       emit(PersonalFailure(e.toString()));
@@ -178,7 +213,7 @@ class PersonalBloc extends Bloc<PersonalEvent, PersonalState> {
         emit(PersonalSuccess(
             data)); // Emite sucesso com os dados do personal específico
       } else {
-        emit(PersonalFailure('Failed to fetch personal'));
+        emit(const PersonalFailure('Failed to fetch personal'));
       }
     } catch (e) {
       emit(PersonalFailure(e.toString()));
@@ -217,7 +252,7 @@ class PersonalBloc extends Bloc<PersonalEvent, PersonalState> {
         final data = jsonDecode(response.body);
         emit(PersonalSuccess(data)); // Emit success with updated data
       } else {
-        emit(PersonalFailure('Update failed'));
+        emit(const PersonalFailure('Update failed'));
       }
     } catch (e) {
       emit(PersonalFailure(e.toString()));
@@ -239,10 +274,10 @@ class PersonalBloc extends Bloc<PersonalEvent, PersonalState> {
       );
 
       if (response.statusCode == 200) {
-        emit(PersonalSuccess(
+        emit(const PersonalSuccess(
             'Personal deleted')); // Emite sucesso com a mensagem de exclusão
       } else {
-        emit(PersonalFailure('Delete failed'));
+        emit(const PersonalFailure('Delete failed'));
       }
     } catch (e) {
       emit(PersonalFailure(e.toString()));
@@ -268,7 +303,7 @@ class PersonalBloc extends Bloc<PersonalEvent, PersonalState> {
             data['password']; // Adjust based on your API response structure
         emit(PersonalPasswordLoaded(password));
       } else {
-        emit(PersonalFailure('Failed to fetch personal password'));
+        emit(const PersonalFailure('Failed to fetch personal password'));
       }
     } catch (e) {
       emit(PersonalFailure(e.toString()));
@@ -293,9 +328,9 @@ class PersonalBloc extends Bloc<PersonalEvent, PersonalState> {
       );
 
       if (response.statusCode == 200) {
-        emit(PersonalSuccess('Password updated successfully'));
+        emit(const PersonalSuccess('Password updated successfully'));
       } else {
-        emit(PersonalFailure('Failed to update password'));
+        emit(const PersonalFailure('Failed to update password'));
       }
     } catch (e) {
       emit(PersonalFailure(e.toString()));
@@ -329,9 +364,9 @@ class PersonalBloc extends Bloc<PersonalEvent, PersonalState> {
         final response = await request.send();
 
         if (response.statusCode == 200) {
-          emit(PersonalSuccess('Perfil atualizado com sucesso com imagem'));
+          emit(const PersonalSuccess('Perfil atualizado com sucesso com imagem'));
         } else {
-          emit(PersonalFailure('Falha ao atualizar perfil com imagem'));
+          emit(const PersonalFailure('Falha ao atualizar perfil com imagem'));
         }
       } else {
         // Se nenhuma imagem foi selecionada, enviar uma requisição PUT normal
@@ -345,9 +380,9 @@ class PersonalBloc extends Bloc<PersonalEvent, PersonalState> {
         );
 
         if (response.statusCode == 200) {
-          emit(PersonalSuccess('Perfil atualizado com sucesso'));
+          emit(const PersonalSuccess('Perfil atualizado com sucesso'));
         } else {
-          emit(PersonalFailure('Falha ao atualizar perfil'));
+          emit(const PersonalFailure('Falha ao atualizar perfil'));
         }
       }
     } catch (e) {

@@ -14,13 +14,17 @@ class TurmaBloc extends Bloc<TurmaEvent, TurmaState> {
     on<UpdateTurma>(_onUpdateTurma);
     on<DeleteTurma>(_onDeleteTurma);
     on<GetTurmaDetails>(_onGetTurmaDetails);
+    on<CheckTurmaExists>(_onCheckTurmaExists);
+    on<AddStudentToTurma>(_onAddStudentToTurma);
+     on<CreateTurma>(_onCreateTurma);
   }
 
   Future<void> _onLoadTurmas(LoadTurmas event, Emitter<TurmaState> emit) async {
     emit(TurmaLoading());
     try {
       final token = await getToken();
-      print('Token obtido: $token'); // Log do token para garantir que foi obtido corretamente
+      print(
+          'Token obtido: $token'); // Log do token para garantir que foi obtido corretamente
 
       final response = await http.get(
         Uri.parse('https://developerxpb.com.br/api/turma'),
@@ -35,24 +39,27 @@ class TurmaBloc extends Bloc<TurmaEvent, TurmaState> {
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
 
-        print('Chaves do objeto resposta: ${responseData.keys}'); // Verificar as chaves do JSON
+        print(
+            'Chaves do objeto resposta: ${responseData.keys}'); // Verificar as chaves do JSON
 
         // Supondo que 'data' seja a chave que contém a lista de turmas
         if (responseData.containsKey('data')) {
           final List<dynamic> turmaListJson = responseData['data'];
-          print('Número de turmas carregadas: ${turmaListJson.length}'); // Log do número de turmas
+          print(
+              'Número de turmas carregadas: ${turmaListJson.length}'); // Log do número de turmas
 
-          final List<Turma> turmas = turmaListJson
-              .map((json) => Turma.fromJson(json))
-              .toList();
+          final List<Turma> turmas =
+              turmaListJson.map((json) => Turma.fromJson(json)).toList();
 
           emit(TurmaLoaded(turmas: turmas));
         } else {
           print("Erro: A chave 'data' não foi encontrada no JSON.");
-          emit(TurmaFailure(error: 'A chave "data" não foi encontrada no JSON.'));
+          emit(TurmaFailure(
+              error: 'A chave "data" não foi encontrada no JSON.'));
         }
       } else {
-        print('Erro: Falha ao carregar as turmas. Status: ${response.statusCode}');
+        print(
+            'Erro: Falha ao carregar as turmas. Status: ${response.statusCode}');
         emit(TurmaFailure(error: 'Falha ao carregar as turmas.'));
       }
     } catch (e) {
@@ -67,7 +74,8 @@ class TurmaBloc extends Bloc<TurmaEvent, TurmaState> {
       final token = await getToken();
       print('Token obtido: $token'); // Log do token
 
-      print('Dados da turma que será adicionada: ${event.turma.toJson()}'); // Log dos dados da turma
+      print(
+          'Dados da turma que será adicionada: ${event.turma.toJson()}'); // Log dos dados da turma
 
       final response = await http.post(
         Uri.parse('https://developerxpb.com.br/api/turma'),
@@ -79,7 +87,8 @@ class TurmaBloc extends Bloc<TurmaEvent, TurmaState> {
       );
 
       print('Status da resposta ao adicionar turma: ${response.statusCode}');
-      print('Corpo da resposta ao adicionar turma: ${response.body}'); // Log do corpo da resposta
+      print(
+          'Corpo da resposta ao adicionar turma: ${response.body}'); // Log do corpo da resposta
 
       if (response.statusCode == 201) {
         print('Turma adicionada com sucesso.');
@@ -95,13 +104,15 @@ class TurmaBloc extends Bloc<TurmaEvent, TurmaState> {
     }
   }
 
-  Future<void> _onUpdateTurma(UpdateTurma event, Emitter<TurmaState> emit) async {
+  Future<void> _onUpdateTurma(
+      UpdateTurma event, Emitter<TurmaState> emit) async {
     emit(TurmaLoading());
     try {
       final token = await getToken();
       print('Token obtido: $token'); // Log do token
 
-      print('Dados da turma que será atualizada: ${event.turma.toJson()}'); // Log dos dados da turma
+      print(
+          'Dados da turma que será atualizada: ${event.turma.toJson()}'); // Log dos dados da turma
 
       final response = await http.put(
         Uri.parse('https://developerxpb.com.br/api/turma/${event.turma.id}'),
@@ -113,7 +124,8 @@ class TurmaBloc extends Bloc<TurmaEvent, TurmaState> {
       );
 
       print('Status da resposta ao atualizar turma: ${response.statusCode}');
-      print('Corpo da resposta ao atualizar turma: ${response.body}'); // Log do corpo da resposta
+      print(
+          'Corpo da resposta ao atualizar turma: ${response.body}'); // Log do corpo da resposta
 
       if (response.statusCode == 200) {
         print('Turma atualizada com sucesso.');
@@ -129,7 +141,8 @@ class TurmaBloc extends Bloc<TurmaEvent, TurmaState> {
     }
   }
 
-  Future<void> _onDeleteTurma(DeleteTurma event, Emitter<TurmaState> emit) async {
+  Future<void> _onDeleteTurma(
+      DeleteTurma event, Emitter<TurmaState> emit) async {
     emit(TurmaLoading());
     try {
       final token = await getToken();
@@ -143,7 +156,8 @@ class TurmaBloc extends Bloc<TurmaEvent, TurmaState> {
       );
 
       print('Status da resposta ao excluir turma: ${response.statusCode}');
-      print('Corpo da resposta ao excluir turma: ${response.body}'); // Log do corpo da resposta
+      print(
+          'Corpo da resposta ao excluir turma: ${response.body}'); // Log do corpo da resposta
 
       if (response.statusCode == 200) {
         print('Turma excluída com sucesso.');
@@ -159,7 +173,8 @@ class TurmaBloc extends Bloc<TurmaEvent, TurmaState> {
     }
   }
 
-  Future<void> _onGetTurmaDetails(GetTurmaDetails event, Emitter<TurmaState> emit) async {
+  Future<void> _onGetTurmaDetails(
+      GetTurmaDetails event, Emitter<TurmaState> emit) async {
     emit(TurmaLoading());
     try {
       final token = await getToken();
@@ -172,8 +187,10 @@ class TurmaBloc extends Bloc<TurmaEvent, TurmaState> {
         },
       );
 
-      print('Status da resposta ao obter detalhes da turma: ${response.statusCode}');
-      print('Corpo da resposta ao obter detalhes da turma: ${response.body}'); // Log do corpo da resposta
+      print(
+          'Status da resposta ao obter detalhes da turma: ${response.statusCode}');
+      print(
+          'Corpo da resposta ao obter detalhes da turma: ${response.body}'); // Log do corpo da resposta
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> turmaJson = jsonDecode(response.body);
@@ -182,7 +199,8 @@ class TurmaBloc extends Bloc<TurmaEvent, TurmaState> {
         print('Detalhes da turma carregados com sucesso.');
         emit(TurmaDetailsLoaded(turma: turma));
       } else {
-        print('Falha ao carregar os detalhes da turma. Status: ${response.statusCode}');
+        print(
+            'Falha ao carregar os detalhes da turma. Status: ${response.statusCode}');
         emit(TurmaFailure(error: 'Falha ao carregar os detalhes da turma.'));
       }
     } catch (e) {
@@ -191,3 +209,79 @@ class TurmaBloc extends Bloc<TurmaEvent, TurmaState> {
     }
   }
 }
+
+Future<void> _onCheckTurmaExists(
+    CheckTurmaExists event, Emitter<TurmaState> emit) async {
+  emit(TurmaLoading());
+  try {
+    final token = await getToken();
+    final response = await http.get(
+      Uri.parse(
+          'https://developerxpb.com.br/api/turma?name=${event.turmaName}'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> turmas = jsonDecode(response.body)['data'];
+      if (turmas.isNotEmpty) {
+        final turma = Turma.fromJson(turmas.first);
+        emit(TurmaFound(turma: turma));
+      } else {
+        emit(TurmaNotFound());
+      }
+    } else {
+      emit(TurmaFailure(error: 'Failed to check turma.'));
+    }
+  } catch (e) {
+    emit(TurmaFailure(error: e.toString()));
+  }
+}
+
+Future<void> _onAddStudentToTurma(
+    AddStudentToTurma event, Emitter<TurmaState> emit) async {
+  try {
+    final token = await getToken();
+    final response = await http.post(
+      Uri.parse(
+          'https://developerxpb.com.br/api/turma/${event.turmaId}/add-student'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'aluno_id': event.alunoId}),
+    );
+
+    if (response.statusCode == 200) {
+      emit(TurmaSuccess(message: 'Student added to turma.'));
+    } else {
+      emit(TurmaFailure(error: 'Failed to add student to turma.'));
+    }
+  } catch (e) {
+    emit(TurmaFailure(error: e.toString()));
+  }
+}
+
+Future<void> _onCreateTurma(CreateTurma event, Emitter<TurmaState> emit) async {
+    try {
+      final token = await getToken();
+      final response = await http.post(
+        Uri.parse('https://developerxpb.com.br/api/turma'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(event.turmaData),
+      );
+
+      if (response.statusCode == 201) {
+        final turma = Turma.fromJson(jsonDecode(response.body));
+        emit(TurmaCreated(turma: turma));
+      } else {
+        emit(TurmaFailure(error: 'Failed to create turma.'));
+      }
+    } catch (e) {
+      emit(TurmaFailure(error: e.toString()));
+    }
+  }

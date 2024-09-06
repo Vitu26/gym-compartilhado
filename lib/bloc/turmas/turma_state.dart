@@ -48,3 +48,17 @@ class TurmaFailure extends TurmaState {
   @override
   List<Object?> get props => [error];
 }
+
+
+class TurmaFound extends TurmaState {
+  final Turma turma;
+  TurmaFound({required this.turma});
+}
+
+class TurmaNotFound extends TurmaState {}
+
+
+class TurmaCreated extends TurmaState {
+  final Turma turma;
+  TurmaCreated({required this.turma});
+}

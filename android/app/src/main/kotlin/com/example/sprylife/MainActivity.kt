@@ -1,4 +1,4 @@
-package com.example.sprylife
+package br.com.sprylife.sprylife
 
 import io.flutter.embedding.android.FlutterActivity
 

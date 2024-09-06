@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sprylife/bloc/planos/planos_bloc.dart';
 import 'package:sprylife/bloc/planos/planos_event.dart';
 import 'package:sprylife/utils/colors.dart';
+import 'package:sprylife/widgets/custom_appbar.dart';
+import 'package:sprylife/widgets/custom_button.dart';
 
 class CriarPlanoScreenPersonal extends StatelessWidget {
   final String personalId;
@@ -17,9 +19,9 @@ class CriarPlanoScreenPersonal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Criar novo plano'),
-        backgroundColor: personalColor,
+      backgroundColor: Colors.white,
+      appBar: CustomAppBar(
+        title: 'Criar novo plano',
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -89,9 +91,7 @@ class CriarPlanoScreenPersonal extends StatelessWidget {
                 maxLines: 3,
               ),
               SizedBox(height: 30),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
+              CustomButton(text: 'Salvar', backgroundColor: personalColor, onPressed: () {
                     if (nomePlanoController.text.isNotEmpty &&
                         precoPlanoController.text.isNotEmpty) {
                       final planoData = {
@@ -116,18 +116,7 @@ class CriarPlanoScreenPersonal extends StatelessWidget {
                                 'Por favor, preencha todos os campos obrigatórios')),
                       );
                     }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding:
-                        EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                    backgroundColor: personalColor,
-                  ),
-                  child: Text('Salvar', style: TextStyle(fontSize: 16)),
-                ),
-              ),
+                  },)
             ],
           ),
         ),

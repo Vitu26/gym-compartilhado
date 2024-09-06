@@ -6,6 +6,7 @@ import 'package:sprylife/bloc/rotinaTreino/rotina_treino_state.dart';
 import 'package:sprylife/pages/personal/perfilpages/treinos/criar_treino_personal.dart';
 import 'package:sprylife/pages/personal/perfilpages/treinos/rotina_de_treino_detalhes.dart';
 import 'package:sprylife/utils/colors.dart';
+import 'package:sprylife/widgets/custom_button.dart';
 
 class MeusTreinosPage extends StatelessWidget {
   final String personalId;
@@ -15,6 +16,7 @@ class MeusTreinosPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -66,12 +68,6 @@ class MeusTreinosPage extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) => RotinaTreinoDetalhesPage(
                             rotinaId: rotina['id'],
-                            // rotinaNome: rotina['nome'] ?? 'Nome não disponível',
-                            // tipoTreino: rotina['tipo_treino']['nome'] ?? 'Tipo não disponível',
-                            // objetivo: rotina['objetivo']['nome'] ?? 'Objetivo não disponível',
-                            // nivelAtividade: rotina['nivel_atividade']['nome'] ?? 'Nível não disponível',
-                            // dataInicio: rotina['data-inicio'],
-                            // dataFim: rotina['data-fim'],
                           ),
                         ),
                       );
@@ -92,14 +88,17 @@ class MeusTreinosPage extends StatelessWidget {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) =>
-                  CriarRotinaDeTreinoScreen(personalId: personalId)));
-        },
-        child: Icon(Icons.add),
-        backgroundColor: personalColor,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: CustomButton(
+          backgroundColor: personalColor,
+          text: 'Criar rotina',
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => CriarRotinaDeTreinoScreen(personalId: personalId),
+            ));
+          },
+        ),
       ),
     );
   }

@@ -48,46 +48,67 @@ class _ExerciseSelectionPageState extends State<ExerciseSelectionPage> {
               return Center(child: Text('Nenhum exercício encontrado.'));
             }
 
-            return ListView.builder(
-              itemCount: exercicios.length,
-              itemBuilder: (context, index) {
-                final exercise = exercicios[index];
-                final isAdded = _exerciciosAdicionados.contains(exercise['id']);
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: exercicios.length,
+                    itemBuilder: (context, index) {
+                      final exercise = exercicios[index];
+                      final isAdded = _exerciciosAdicionados.contains(exercise['id']);
 
-                return ListTile(
-                  title: Text(exercise['nome'] ?? 'Nome indisponível'),
-                  trailing: ElevatedButton(
-                    onPressed: isAdded
-                        ? null
-                        : () {
-                            setState(() {
-                              _exerciciosAdicionados.add(exercise['id']);
-                            });
+                      return ListTile(
+                        title: Text(exercise['nome'] ?? 'Nome indisponível'),
+                        trailing: ElevatedButton(
+                          onPressed: isAdded
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _exerciciosAdicionados.add(exercise['id']);
+                                  });
 
-                            // Aqui adicionamos o exercício ao treino utilizando o novo BLoC
-                            context.read<ExercicioTreinoBloc>().add(AddExercicioToTreino(
-                                  treinoId: widget.treinoId,
-                                  exercicioId: exercise['id'],
-                                ));
+                                  // Aqui adicionamos o exercício ao treino utilizando o novo BLoC
+                                  context.read<ExercicioTreinoBloc>().add(AddExercicioToTreino(
+                                        treinoId: widget.treinoId,
+                                        exercicioId: exercise['id'],
+                                      ));
 
-                            print('Adicionando exercício ID: ${exercise['id']} ao treino: ${widget.treinoId}');
-                          },
-                    child: Text(isAdded ? 'Adicionado' : 'Adicionar'),
+                                  print('Adicionando exercício ID: ${exercise['id']} ao treino: ${widget.treinoId}');
+                                },
+                          child: Text(isAdded ? 'Adicionado' : 'Adicionar'),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
+                ),
+                // Adiciona o ElevatedButton ao final
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Ao pressionar o botão Salvar, retornar à página anterior
+                      Navigator.of(context).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                      backgroundColor: Theme.of(context).primaryColor, // Cor personalizada
+                    ),
+                    child: Text(
+                      'Salvar',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ),
+              ],
             );
           } else if (state is ExercicioFailure) {
             return Center(child: Text('Erro ao carregar exercícios: ${state.error}'));
           }
           return Center(child: Text('Carregando exercícios...'));
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).pop(); // Retorna para a página anterior
-        },
-        child: Icon(Icons.check),
       ),
     );
   }
