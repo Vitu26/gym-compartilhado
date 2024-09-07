@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:sprylife/pages/personal/aluno_treino_screen.dart';
 import 'package:sprylife/pages/personal/arquivos/aluno_arquivo.dart';
 import 'package:sprylife/pages/personal/faturasAndPlanos/faturas_srcreen.dart';
-import 'package:sprylife/pages/personal/faturasAndPlanos/planos_screen.dart';
 import 'package:sprylife/utils/colors.dart';
 import 'package:sprylife/widgets/custom_button.dart';
 
@@ -62,40 +61,41 @@ class AlunoPerfilScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
-    // Verificação de valores nulos com fallback para valores padrão
-    final String nome = alunoData?['user']?['name']?.replaceAll(' ', '').toLowerCase() ?? 'default_image';
-    final String nomeExibicao = alunoData?['user']?['name'] ?? 'Nome Indisponível';
-    final String status = alunoData?['status'] ?? 'Status Indisponível';
-    final String cidade = alunoData?['address']?['cidade'] ?? 'Localização Indisponível';
+Widget _buildHeader() {
+  // Verificação de valores nulos com fallback para valores padrão
+  final String nome = alunoData?['user']?['name']?.replaceAll(' ', '').toLowerCase() ?? 'default_image';
+  final String nomeExibicao = alunoData?['user']?['name'] ?? 'Nome Indisponível';
+  final String status = alunoData?['status']?.toString() ?? 'Status Indisponível'; // Conversão para string
+  final String cidade = alunoData?['address']?['cidade']?.toString() ?? 'Localização Indisponível'; // Conversão para string
 
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 40,
-          backgroundImage: AssetImage('images/$nome.jpg'),
-        ),
-        SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              nomeExibicao,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              status,
-              style: TextStyle(fontSize: 16, color: Colors.green),
-            ),
-            Text(
-              cidade,
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+  return Row(
+    children: [
+      CircleAvatar(
+        radius: 40,
+        backgroundImage: AssetImage('images/$nome.jpg'),
+      ),
+      SizedBox(width: 16),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            nomeExibicao,
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            status,
+            style: TextStyle(fontSize: 16, color: Colors.green),
+          ),
+          Text(
+            cidade,
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
 
   Widget _buildActionButtons(BuildContext context) {
     return Column(

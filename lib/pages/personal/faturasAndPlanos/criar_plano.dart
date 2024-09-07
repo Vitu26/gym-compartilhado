@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sprylife/bloc/planos/planos_bloc.dart';
 import 'package:sprylife/bloc/planos/planos_event.dart';
 import 'package:sprylife/utils/colors.dart';
+import 'package:sprylife/widgets/custom_appbar.dart';
+import 'package:sprylife/widgets/custom_button.dart';
 
 class CriarPlanoScreen extends StatelessWidget {
   final String personalId;
@@ -17,14 +19,11 @@ class CriarPlanoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('Valor do personalId: $personalId');
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Criar novo plano'),
-        backgroundColor: personalColor,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+      backgroundColor: Colors.white,
+      appBar: CustomAppBar(
+        title: 'Criar novo plano',
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -50,7 +49,8 @@ class CriarPlanoScreen extends StatelessWidget {
                   labelText: 'Assinatura recorrente?',
                   border: OutlineInputBorder(),
                 ),
-                items: ['Sim', 'Não'].map<DropdownMenuItem<String>>((String value) {
+                items: ['Sim', 'Não']
+                    .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(value),
@@ -96,41 +96,46 @@ class CriarPlanoScreen extends StatelessWidget {
                 maxLines: 4,
               ),
               SizedBox(height: 30),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (nomePlanoController.text.isNotEmpty &&
-                        valorPlanoController.text.isNotEmpty) {
+              CustomButton(
+                text: 'Salvar',
+                backgroundColor: personalColor,
+                onPressed: () {
+                  if (nomePlanoController.text.isNotEmpty &&
+                      valorPlanoController.text.isNotEmpty) {
+                    // Verifique se personalId é válido
+                    if (personalId.isNotEmpty && personalId != 'null') {
                       final planoData = {
                         'nome-do-plano': nomePlanoController.text,
                         'periodicidade': periodicidade!,
-                        'valor-do-plano': valorPlanoController.text, // Enviar valor como string simples
-                        'descricao-do-plano': descricaoController.text.isNotEmpty
-                            ? descricaoController.text
-                            : 'Sem descrição',
-                        'assinatura-recorrente': assinaturaRecorrente ? '0' : '1',
-                        'personal_id': personalId, // Certificar-se de que o ID é passado corretamente
+                        'valor-do-plano': valorPlanoController.text,
+                        'descricao-do-plano':
+                            descricaoController.text.isNotEmpty
+                                ? descricaoController.text
+                                : 'Sem descrição',
+                        'assinatura-recorrente':
+                            assinaturaRecorrente ? '0' : '1',
+                        'personal_id':
+                            personalId, // Certifique-se de que o ID é válido
                       };
 
                       context.read<PlanoBloc>().add(CreatePlano(planoData));
                       Navigator.of(context).pop();
                     } else {
+                      // Caso o personalId esteja nulo ou vazio
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                             content: Text(
-                                'Por favor, preencha todos os campos obrigatórios')),
+                                'Erro: ID do personal trainer está inválido ou não foi fornecido')),
                       );
                     }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                    backgroundColor: personalColor,
-                  ),
-                  child: Text('Salvar', style: TextStyle(fontSize: 16)),
-                ),
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              'Por favor, preencha todos os campos obrigatórios')),
+                    );
+                  }
+                },
               ),
             ],
           ),

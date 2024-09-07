@@ -29,8 +29,8 @@ import 'package:sprylife/pages/personal/home_page_parsonal.dart';
 import 'package:sprylife/pages/personal/perfilpages/treinos/treinos_detalhe_page.dart';
 import 'package:sprylife/pages/pesquisar/filter_result.dart';
 import 'package:sprylife/pages/pesquisar/filter_screen.dart';
+import 'package:sprylife/pages/pesquisar/treiner_details.dart'; // Nova página do Trainer Details
 import 'package:firebase_core/firebase_core.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -130,15 +130,14 @@ class MyApp extends StatelessWidget {
             );
           }
 
-          switch (settings.name) {
-            case '/verify':
-              final args = settings.arguments as String;
-              return MaterialPageRoute(
-                builder: (_) => VerifyCodeScreen(email: args),
-              );
-            default:
-              return null;
+          if (settings.name == AppRoutes.verify) {
+            final args = settings.arguments as String;
+            return MaterialPageRoute(
+              builder: (_) => VerifyCodeScreen(email: args),
+            );
           }
+
+          return null; // Se não encontrar a rota, retorna null
         },
       ),
     );

@@ -19,11 +19,6 @@ class HomePersonalScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (personalData == null) {
-      return Scaffold(
-        body: Center(child: Text('Erro: Dados do personal estão faltando.')),
-      );
-    }
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -45,6 +40,7 @@ class HomePersonalScreen extends StatelessWidget {
     );
   }
 
+  // Construir saudação na tela, incluindo o nome do personal
   Widget _buildGreeting(BuildContext context) {
     return Row(
       children: [
@@ -59,7 +55,7 @@ class HomePersonalScreen extends StatelessWidget {
               ),
             ),
             Text(
-              '${personalData['nome']}',
+              '${personalData['nome']}', // Nome do personal vindo de 'personalData'
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -95,14 +91,13 @@ class HomePersonalScreen extends StatelessWidget {
                 top: 8,
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.red,
                     shape: BoxShape.circle,
                   ),
                   child: Text(
                     notifications
-                        .where(
-                            (notification) => notification['status'] == 'new')
+                        .where((notification) => notification['status'] == 'new')
                         .length
                         .toString(),
                     style: const TextStyle(color: Colors.white, fontSize: 12),
@@ -115,6 +110,7 @@ class HomePersonalScreen extends StatelessWidget {
     );
   }
 
+  // Construir botões de ações rápidas
   Widget _buildActionButtons(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -133,7 +129,7 @@ class HomePersonalScreen extends StatelessWidget {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => AlunoFaturaScreen(
-                  alunoData: personalData, // Passe os dados do aluno
+                  alunoData: personalData, // Passa os dados do aluno/personal
                 ),
               ),
             );
@@ -153,7 +149,7 @@ class HomePersonalScreen extends StatelessWidget {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => AlunoTreinosScreen(
-                  alunoData: personalData, // Passe os dados do aluno
+                  alunoData: personalData, // Passa os dados do aluno/personal
                   treinos: [
                     {'nome': 'Treino A', 'descricao': 'Treino de força'},
                     {'nome': 'Treino B', 'descricao': 'Treino de resistência'},
@@ -167,8 +163,8 @@ class HomePersonalScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(
-      String title, IconData icon, VoidCallback onPressed) {
+  // Função para criar botões de ação
+  Widget _buildActionButton(String title, IconData icon, VoidCallback onPressed) {
     return Column(
       children: [
         CircleAvatar(
@@ -185,6 +181,7 @@ class HomePersonalScreen extends StatelessWidget {
     );
   }
 
+  // Seção para os botões relacionados ao aluno
   Widget _buildStudentSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -232,6 +229,7 @@ class HomePersonalScreen extends StatelessWidget {
     );
   }
 
+  // Construir a lista de alunos
   Widget _buildStudentList(BuildContext context) {
     final students = [
       {'name': 'Renato Oliveira', 'goal': 'Aumento de massa muscular'},
@@ -259,6 +257,7 @@ class HomePersonalScreen extends StatelessWidget {
     );
   }
 
+  // Diálogo de opções para cada aluno
   void _showStudentDialog(BuildContext context, Map<String, String> student) {
     showDialog(
       context: context,
@@ -323,6 +322,7 @@ class HomePersonalScreen extends StatelessWidget {
     );
   }
 
+  // Botão dentro do diálogo do aluno
   Widget _buildDialogButton(IconData icon, String label) {
     return Column(
       children: [

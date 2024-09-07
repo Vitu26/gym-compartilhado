@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sprylife/pages/personal/faturasAndPlanos/criar_fatura.dart';
 import 'package:sprylife/pages/personal/faturasAndPlanos/planos_screen._page.dart';
-import 'package:sprylife/pages/personal/faturasAndPlanos/planos_screen.dart';
 import 'package:sprylife/utils/colors.dart';
 
 class AlunoFaturaScreen extends StatefulWidget {
@@ -22,7 +21,8 @@ class _AlunoFaturaScreenState extends State<AlunoFaturaScreen> {
   @override
   Widget build(BuildContext context) {
     // Verifique se alunoData possui um 'id' válido
-    final String alunoId = widget.alunoData['id'] ?? 'ID não disponível';
+    final String alunoId =
+        widget.alunoData['id']?.toString() ?? 'ID não disponível';
 
     final double recebido = widget.alunoData['recebido'] != null
         ? widget.alunoData['recebido'].toDouble()
@@ -75,31 +75,49 @@ class _AlunoFaturaScreenState extends State<AlunoFaturaScreen> {
   }
 
   Widget _buildFloatingActionButton() {
+    String? personalId = widget.alunoData['personal_id']?.toString();
+
     if (_selectedIndex == 1) {
       return FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => CriarFaturaScreen(alunoId: widget.alunoData['id'] ?? ''),
+              builder: (context) => CriarFaturaScreen(
+                alunoId: widget.alunoData['id'].toString(),
+              ),
             ),
           );
         },
         child: Icon(Icons.add),
         backgroundColor: personalColor,
       );
-    } else if (_selectedIndex == 2) {
+    } else if (_selectedIndex == 2 &&
+        personalId != null &&
+        personalId.isNotEmpty) {
       return FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => PlanosScreen(personalId: widget.alunoData['personal_id'] ?? ''),
+              builder: (context) => PlanosScreen(personalId: personalId),
             ),
+          );
+        },
+        child: Icon(Icons.add),
+        backgroundColor: personalColor,
+      );
+    } else if (_selectedIndex == 2 &&
+        (personalId == null || personalId.isEmpty)) {
+      return FloatingActionButton(
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('ID do personal não encontrado.')),
           );
         },
         child: Icon(Icons.add),
         backgroundColor: personalColor,
       );
     }
+
     return SizedBox.shrink(); // Retorna um widget vazio quando não há ação
   }
 
@@ -260,7 +278,8 @@ class _AlunoFaturaScreenState extends State<AlunoFaturaScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Valor: R\$ ${fatura['valor']?.toStringAsFixed(2) ?? 'Valor não disponível'}'),
+                Text(
+                    'Valor: R\$ ${fatura['valor']?.toStringAsFixed(2) ?? 'Valor não disponível'}'),
                 Text(
                     'Vencimento: ${fatura['vencimento'] ?? 'Data não disponível'}'),
                 Text('Pago em: ${fatura['pagoEm'] ?? 'Data não disponível'}'),
@@ -300,7 +319,8 @@ class _AlunoFaturaScreenState extends State<AlunoFaturaScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Valor: R\$ ${fatura['valor']?.toStringAsFixed(2) ?? 'Valor não disponível'}'),
+                Text(
+                    'Valor: R\$ ${fatura['valor']?.toStringAsFixed(2) ?? 'Valor não disponível'}'),
                 Text(
                     'Vencimento: ${fatura['vencimento'] ?? 'Data não disponível'}'),
                 Text('Pago em: ${fatura['pagoEm'] ?? '-'}'),
@@ -316,6 +336,7 @@ class _AlunoFaturaScreenState extends State<AlunoFaturaScreen> {
 
   Widget _buildPlanosContent() {
     final plano = widget.alunoData['planoAtual'];
+    final personalId = widget.alunoData['personal_id']?.toString();
 
     if (plano == null) {
       return Center(
@@ -335,12 +356,28 @@ class _AlunoFaturaScreenState extends State<AlunoFaturaScreen> {
           SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => PlanosScreen(
-                  personalId: widget.alunoData['personal_id'].toString(),),
-                ),
-              );
+              // Verifica se o personalId não é nulo ou vazio
+              if (personalId != null && personalId.isNotEmpty) {
+                // Debug print para verificar o valor do personalId
+                debugPrint(
+                    'Navegando para PlanosScreen com personalId: $personalId');
+
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => PlanosScreen(
+                      personalId: personalId,
+                    ),
+                  ),
+                );
+              } else {
+                // Caso o personalId seja nulo ou vazio, mostre uma mensagem de erro
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        'ID do personal não encontrado. Não é possível editar o plano.'),
+                  ),
+                );
+              }
             },
             child: Text(plano != null ? 'Editar Plano' : 'Novo Plano'),
           ),
@@ -401,7 +438,6 @@ class _AlunoFaturaScreenState extends State<AlunoFaturaScreen> {
         _startDate = picked.start;
         _endDate = picked.end;
       });
-      // Aqui você pode adicionar lógica para filtrar as faturas com base nas datas selecionadas.
     }
   }
 }

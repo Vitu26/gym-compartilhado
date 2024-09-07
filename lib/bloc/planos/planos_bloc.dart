@@ -34,13 +34,24 @@ class PlanoBloc extends Bloc<PlanoEvent, PlanoState> {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> decodedData = jsonDecode(response.body);
+        print('Dados decodificados: $decodedData');
+
         if (decodedData['data'] is List) {
           final List<dynamic> planos = decodedData['data'];
+
+          // Verificar tipo de dados do campo específico
+          for (var plano in planos) {
+            print('Plano ID: ${plano['id']}, Tipo: ${plano['id'].runtimeType}');
+            print(
+                'Nome do Plano: ${plano['nome-do-plano']}, Tipo: ${plano['nome-do-plano'].runtimeType}');
+          }
+
           emit(PlanoLoaded(planos));
           print('Planos carregados com sucesso: $planos');
         } else {
           emit(PlanoFailure('Expected a list but received a map'));
-          print('Erro ao carregar os planos: Expected a list but received a map');
+          print(
+              'Erro ao carregar os planos: Expected a list but received a map');
         }
       } else {
         emit(PlanoFailure('Failed to load planos'));
@@ -52,45 +63,39 @@ class PlanoBloc extends Bloc<PlanoEvent, PlanoState> {
     }
   }
 
-Future<void> _onCreatePlano(
-    CreatePlano event, Emitter<PlanoState> emit) async {
-  emit(PlanoLoading());
-  print("Iniciando criação de plano com os dados: ${event.planoData}");
-  try {
-    final token = await getToken(); // Obtém o token de autorização
+  Future<void> _onCreatePlano(
+      CreatePlano event, Emitter<PlanoState> emit) async {
+    emit(PlanoLoading());
+    print("Iniciando criação de plano com os dados: ${event.planoData}");
+    try {
+      final token = await getToken(); // Obtém o token de autorização
 
-    final response = await http.post(
-      Uri.parse('https://developerxpb.com.br/api/planos'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(event.planoData),
-    );
+      print('Dados que serão enviados: ${jsonEncode(event.planoData)}');
 
-    if (response.statusCode == 200) {
-      print("Resposta do servidor: ${response.body}");
-      // Aqui, você pode verificar o conteúdo da resposta para confirmar se a criação foi bem-sucedida
-      emit(PlanoSuccess('Resposta inesperada do servidor. Verifique o log.'));
-    } else if (response.statusCode == 201) {
-      print("Plano criado com sucesso.");
-      emit(PlanoSuccess('Plano criado com sucesso'));
-    } else if (response.statusCode == 422) {
-      print("Erro de validação ao criar plano: ${response.body}");
-      emit(PlanoFailure('Erro de validação ao criar plano: ${response.body}'));
-    } else if (response.statusCode == 500) {
-      print("Erro interno ao criar plano: ${response.body}");
-      emit(PlanoFailure('Erro interno ao criar plano'));
-    } else {
-      print("Falha ao criar plano. Código de status: ${response.statusCode}");
-      emit(PlanoFailure('Failed to create plano'));
+      final response = await http.post(
+        Uri.parse('https://developerxpb.com.br/api/planos'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(event.planoData),
+      );
+
+      print('Status da resposta: ${response.statusCode}');
+      print('Corpo da resposta: ${response.body}');
+
+      if (response.statusCode == 201) {
+        emit(PlanoSuccess('Plano criado com sucesso'));
+        print("Plano criado com sucesso.");
+      } else {
+        emit(PlanoFailure('Failed to create plano'));
+        print("Erro ao criar o plano: ${response.body}");
+      }
+    } catch (e) {
+      emit(PlanoFailure(e.toString()));
+      print("Erro ao criar o plano: $e");
     }
-  } catch (e) {
-    print("Erro ao criar o plano: $e");
-    emit(PlanoFailure(e.toString()));
   }
-}
-
 
   Future<void> _onGetPlano(GetPlano event, Emitter<PlanoState> emit) async {
     emit(PlanoLoading());
@@ -110,7 +115,8 @@ Future<void> _onCreatePlano(
         print("Plano carregado com sucesso: $data");
         emit(PlanoDetailLoaded(data));
       } else {
-        print("Falha ao carregar o plano. Código de status: ${response.statusCode}");
+        print(
+            "Falha ao carregar o plano. Código de status: ${response.statusCode}");
         emit(PlanoFailure('Failed to load plano'));
       }
     } catch (e) {
@@ -122,7 +128,8 @@ Future<void> _onCreatePlano(
   Future<void> _onUpdatePlano(
       UpdatePlano event, Emitter<PlanoState> emit) async {
     emit(PlanoLoading());
-    print("Iniciando atualização do plano com ID: ${event.id} e dados: ${event.planoData}");
+    print(
+        "Iniciando atualização do plano com ID: ${event.id} e dados: ${event.planoData}");
     try {
       final token = await getToken(); // Obtém o token de autorização
 
@@ -140,9 +147,11 @@ Future<void> _onCreatePlano(
         emit(PlanoSuccess('Plano atualizado com sucesso'));
       } else if (response.statusCode == 422) {
         print("Erro de validação ao atualizar plano: ${response.body}");
-        emit(PlanoFailure('Erro de validação ao atualizar plano: ${response.body}'));
+        emit(PlanoFailure(
+            'Erro de validação ao atualizar plano: ${response.body}'));
       } else {
-        print("Falha ao atualizar o plano. Código de status: ${response.statusCode}");
+        print(
+            "Falha ao atualizar o plano. Código de status: ${response.statusCode}");
         emit(PlanoFailure('Failed to update plano'));
       }
     } catch (e) {
@@ -169,7 +178,8 @@ Future<void> _onCreatePlano(
         print("Plano deletado com sucesso.");
         emit(PlanoSuccess('Plano deletado com sucesso'));
       } else {
-        print("Falha ao deletar o plano. Código de status: ${response.statusCode}");
+        print(
+            "Falha ao deletar o plano. Código de status: ${response.statusCode}");
         emit(PlanoFailure('Failed to delete plano'));
       }
     } catch (e) {

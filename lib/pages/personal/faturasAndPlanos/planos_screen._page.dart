@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:sprylife/pages/personal/faturasAndPlanos/criar_plano.dart';
+import 'package:sprylife/utils/colors.dart';
+import 'package:sprylife/widgets/custom_appbar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sprylife/bloc/planos/planos_bloc.dart';
 import 'package:sprylife/bloc/planos/planos_event.dart';
 import 'package:sprylife/bloc/planos/planos_state.dart';
-import 'package:sprylife/utils/colors.dart';
-import 'package:sprylife/widgets/custom_appbar.dart';
-import 'criar_plano.dart';
 
 class PlanosScreen extends StatelessWidget {
   final String personalId;
 
-  PlanosScreen({required this.personalId});
+  PlanosScreen({required this.personalId}) {
+    // Verifica se o personalId não está vazio ao instanciar a tela
+    assert(personalId.isNotEmpty, 'O personalId não pode ser nulo ou vazio');
+    print('Personal ID fornecido: $personalId'); // Debug
+  }
 
   @override
   Widget build(BuildContext context) {
+    print('Construindo PlanosScreen com personalId: $personalId'); // Debug
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
@@ -75,13 +81,13 @@ class PlanosScreen extends StatelessWidget {
 
         final String nomePlano =
             plano['nome-do-plano'] ?? 'Nome não disponível';
-        final String assinaturaRecorrente =
-            plano['assinatura-recorrente'] ?? '0';
+        final String assinaturaRecorrente = plano['assinatura-recorrente']
+            .toString(); // Convertendo int para String
         final String periodicidade = plano['periodicidade'] ?? 'Desconhecida';
         final String descricaoPlano =
             plano['descricao-do-plano'] ?? 'Sem descrição';
         final String valorPlano =
-            plano['valor-do-plano'] ?? 'Valor não disponível';
+            plano['valor-do-plano'].toString(); // Convertendo int para String
 
         return Card(
           elevation: 2,
@@ -103,12 +109,14 @@ class PlanosScreen extends StatelessWidget {
                 if (result == 'editar') {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) =>
-                          CriarPlanoScreen(personalId: personalId),
+                      builder: (context) => CriarPlanoScreen(
+                          personalId: plano['personal_id']
+                              .toString()), // Convertendo int para String
                     ),
                   );
                 } else if (result == 'excluir') {
-                  _showDeleteConfirmationDialog(context, plano['id']);
+                  _showDeleteConfirmationDialog(context,
+                      plano['id'].toString()); // Convertendo int para String
                 }
               },
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -165,155 +173,6 @@ class PlanosScreen extends StatelessWidget {
           ],
         );
       },
-    );
-  }
-}
-
-class CriarPlanoScreen extends StatelessWidget {
-  final String personalId;
-
-  CriarPlanoScreen({required this.personalId});
-
-  final TextEditingController nomePlanoController = TextEditingController();
-  final TextEditingController valorPlanoController = TextEditingController();
-  final TextEditingController descricaoController = TextEditingController();
-  String? periodicidade = 'mensal';
-  bool assinaturaRecorrente = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Criar novo plano'),
-        backgroundColor: personalColor,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: nomePlanoController,
-                decoration: InputDecoration(
-                  labelText: 'Nome do plano:',
-                  labelStyle: TextStyle(fontSize: 16),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 20),
-              DropdownButtonFormField<String>(
-                value: assinaturaRecorrente ? 'Sim' : 'Não',
-                onChanged: (String? newValue) {
-                  assinaturaRecorrente = newValue == 'Sim';
-                },
-                decoration: InputDecoration(
-                  labelText: 'Assinatura recorrente?',
-                  border: OutlineInputBorder(),
-                ),
-                items: ['Sim', 'Não']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
-              SizedBox(height: 20),
-              DropdownButtonFormField<String>(
-                value: periodicidade,
-                onChanged: (String? newValue) {
-                  periodicidade = newValue!;
-                },
-                decoration: InputDecoration(
-                  labelText: 'Periodicidade',
-                  border: OutlineInputBorder(),
-                ),
-                items: <String>['mensal', 'semestral', 'trimestral', 'anual']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
-              SizedBox(height: 20),
-              TextField(
-                controller: valorPlanoController,
-                decoration: InputDecoration(
-                  labelText: 'Valor do plano:',
-                  labelStyle: TextStyle(fontSize: 16),
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              SizedBox(height: 20),
-              TextField(
-                controller: descricaoController,
-                decoration: InputDecoration(
-                  labelText: 'Descrição do plano:',
-                  labelStyle: TextStyle(fontSize: 16),
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 4,
-              ),
-              SizedBox(height: 30),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (personalId.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text(
-                                'O ID do personal está faltando. Não é possível criar um plano.')),
-                      );
-                      return;
-                    }
-
-                    if (nomePlanoController.text.isNotEmpty &&
-                        valorPlanoController.text.isNotEmpty) {
-                      final planoData = {
-                        'nome-do-plano': nomePlanoController.text,
-                        'periodicidade': periodicidade!,
-                        'valor-do-plano': valorPlanoController.text,
-                        'descricao-do-plano':
-                            descricaoController.text.isNotEmpty
-                                ? descricaoController.text
-                                : 'Sem descrição',
-                        'assinatura-recorrente':
-                            assinaturaRecorrente ? '1' : '0',
-                        'personal_id': personalId,
-                      };
-
-                      context.read<PlanoBloc>().add(CreatePlano(planoData));
-                      Navigator.of(context).pop();
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text(
-                                'Por favor, preencha todos os campos obrigatórios')),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding:
-                        EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                    backgroundColor: personalColor,
-                  ),
-                  child: Text('Salvar', style: TextStyle(fontSize: 16)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
