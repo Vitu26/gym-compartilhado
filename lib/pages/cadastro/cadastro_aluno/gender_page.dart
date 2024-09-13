@@ -5,8 +5,10 @@ import 'package:sprylife/bloc/aluno/aluno_evet.dart';
 import 'package:sprylife/bloc/aluno/aluno_state.dart';
 import 'package:sprylife/pages/aluno/home_screen_aluno.dart';
 import 'package:sprylife/pages/cadastro/cadastro_aluno/complete_cadastro_aluno.dart';
+import 'package:sprylife/utils/colors.dart';
 import 'package:sprylife/widgets/gender.dart';
 import 'package:sprylife/widgets/gradiente_button.dart';
+import 'package:sprylife/widgets/progress_widget.dart';
 
 class CadastroGeneroObjNivel extends StatefulWidget {
   final String email;
@@ -34,7 +36,7 @@ class _CadastroGeneroObjNivelState extends State<CadastroGeneroObjNivel> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text('Informações Gerais'),
+        title: ProgressBar(currentStep: 3, totalSteps: 4, color: alunoCor),
       ),
       body: BlocListener<AlunoBloc, AlunoState>(
         listener: (context, state) {
@@ -173,7 +175,7 @@ class _CadastroGeneroObjNivelState extends State<CadastroGeneroObjNivel> {
         border: OutlineInputBorder(),
       ),
       items: [
-        'Redução de gordura e aumento da massa muscular',
+        'Redução gordura/aumento massa muscular',
         'Condicionamento físico ou performance',
         'Aumento de massa muscular',
         'Redução de gordura',

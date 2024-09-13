@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:sprylife/bloc/aluno/aluno_bloc.dart';
 import 'package:sprylife/bloc/aluno/aluno_evet.dart';
 import 'package:sprylife/bloc/aluno/aluno_state.dart';
-import 'package:sprylife/pages/aluno/home_screen_aluno.dart';
 import 'package:sprylife/widgets/bottom_navigator_aluno.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
@@ -164,17 +163,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       'informacoes-comuns': {
         'sexo': _mapSexoToString(widget.selectedGender),
         'data-de-nascimento': _formatarData(
-            dobController.text), // Certifique-se que está no formato correto
+            dobController.text),
         'objetivo_id': _mapObjetivoToId(
-            widget.selectedObjective), // Certifique-se que está correto
+            widget.selectedObjective),
         'nivel-atividade_id': _mapNivelAtividadeToId(
-            widget.selectedActivityLevel), // Certifique-se que está correto
-        'modalidade-aluno_id': "1", // Defina o ID correto
+            widget.selectedActivityLevel),
+        'modalidade-aluno_id': "1",
         'numero_telefone':
-            widget.phone // Substituir "telefone" por "numero_telefone"
+            widget.phone
       },
     };
-
     context.read<AlunoBloc>().add(AlunoCadastro(alunoData));
   }
 
@@ -209,7 +207,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   }
 
   String _formatarData(String dataOriginal) {
-    // Supondo que a data original esteja no formato dd/MM/yyyy
     final DateTime parsedDate = DateFormat("dd/MM/yyyy").parse(dataOriginal);
     return DateFormat("yyyy-MM-dd HH:mm:ss").format(parsedDate);
   }

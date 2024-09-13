@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sprylife/models/cadastro_aluno_model.dart';
 import 'package:sprylife/pages/cadastro/cadastro_aluno/activity_level_page.dart';
+import 'package:sprylife/utils/colors.dart';
 import 'package:sprylife/widgets/gradiente_button.dart';
 import 'package:sprylife/widgets/objectiveOption.dart';
 import 'package:sprylife/widgets/progress_widget.dart';
@@ -35,7 +36,7 @@ class _ObjectiveSelectionPageState extends State<ObjectiveSelectionPage> {
         ),
         elevation: 0,
         backgroundColor: Colors.white,
-        title: ProgressBar(currentStep: 2, totalSteps: 3),
+        title: ProgressBar(currentStep: 2, totalSteps: 3, color: alunoCor,),
         centerTitle: true,
       ),
       body: Padding(

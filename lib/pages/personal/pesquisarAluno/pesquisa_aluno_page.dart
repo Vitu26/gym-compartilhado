@@ -6,8 +6,11 @@ import 'package:sprylife/bloc/aluno/aluno_state.dart';
 import 'package:sprylife/pages/personal/alunoperfil/aluno_perfil_personal.dart';
 import 'package:sprylife/utils/colors.dart';
 
-
 class PesquisaAlunoPage extends StatefulWidget {
+  final Map<String, dynamic>? alunoData;
+  final Map<String, dynamic>? personalData;
+
+  const PesquisaAlunoPage({super.key, this.alunoData, this.personalData});
   @override
   _PesquisaAlunoPageState createState() => _PesquisaAlunoPageState();
 }
@@ -25,35 +28,35 @@ class _PesquisaAlunoPageState extends State<PesquisaAlunoPage> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
         backgroundColor: Colors.white,
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () => Navigator.of(context).pop(),
-              // Adiciona um círculo ao redor do ícone
-              padding:
-                  const EdgeInsets.all(0), // Remove o padding para centralizar o ícone
-              constraints:
-                  const BoxConstraints(), // Remove as restrições padrão para customização
-              iconSize: 24, // Tamanho do ícone
-            ),
-            title: const Text(
-              'Pesquisar Aluno',
-              style: TextStyle(
-                color: Colors.black, // Cor do texto
-                fontSize: 16, // Tamanho da fonte
-                fontWeight: FontWeight.w500, // Espessura da fonte
-              ),
-            ),
-            actions: [],
-            centerTitle: true,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.of(context).pop(),
+            // Adiciona um círculo ao redor do ícone
+            padding: const EdgeInsets.all(
+                0), // Remove o padding para centralizar o ícone
+            constraints:
+                const BoxConstraints(), // Remove as restrições padrão para customização
+            iconSize: 24, // Tamanho do ícone
           ),
+          title: const Text(
+            'Pesquisar Aluno',
+            style: TextStyle(
+              color: Colors.black, // Cor do texto
+              fontSize: 16, // Tamanho da fonte
+              fontWeight: FontWeight.w500, // Espessura da fonte
+            ),
+          ),
+          actions: [],
+          centerTitle: true,
+        ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -69,20 +72,22 @@ class _PesquisaAlunoPageState extends State<PesquisaAlunoPage> {
                     if (state is AlunoLoading) {
                       return Center(child: CircularProgressIndicator());
                     } else if (state is AlunoFailure) {
-                      return Center(child: Text('Erro ao carregar alunos: ${state.error}'));
+                      return Center(
+                          child:
+                              Text('Erro ao carregar alunos: ${state.error}'));
                     } else if (state is AlunoSuccess) {
                       final alunos = state.data;
-      
+
                       // Aplica o filtro aos alunos
                       final filteredAlunos = alunos.where((aluno) {
                         if (_selectedFilter == 'Todos') return true;
                         return aluno['status'] == _selectedFilter;
                       }).toList();
-      
+
                       if (filteredAlunos.isEmpty) {
                         return Center(child: Text('Nenhum aluno encontrado.'));
                       }
-      
+
                       return ListView.builder(
                         itemCount: filteredAlunos.length,
                         itemBuilder: (context, index) {
@@ -91,17 +96,32 @@ class _PesquisaAlunoPageState extends State<PesquisaAlunoPage> {
                             leading: CircleAvatar(
                               backgroundImage: NetworkImage(aluno['foto']),
                             ),
-                            title: Text(aluno['nome'] ?? 'Nome não disponivel'),
-                            subtitle: Text(aluno['informacoes_comuns']?['objetivo'] ?? 'Objetivo não disponível'),
+                            title: Text(aluno['nome'] ?? 'Nome não disponível'),
+                            subtitle: Text(aluno['informacoes_comuns']
+                                    ?['objetivo'] ??
+                                'Objetivo não disponível'),
                             trailing: Icon(Icons.arrow_forward_ios),
                             onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(builder: (context)=> AlunoPerfilScreen(alunoData: aluno)));
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    // Certifique-se de ter o personalData disponível aqui
+                                    return AlunoPerfilScreen(
+                                      alunoData:
+                                          aluno, // Passe os dados do aluno aqui
+                                      personalData: widget
+                                          .personalData, // Passe o personalData aqui
+                                    );
+                                  },
+                                ),
+                              );
                             },
                           );
                         },
                       );
                     }
-      
+
                     return Center(child: Text('Algo deu errado.'));
                   },
                 ),
@@ -121,11 +141,15 @@ class _PesquisaAlunoPageState extends State<PesquisaAlunoPage> {
         prefixIcon: Icon(Icons.search),
         suffixIcon: _searchController.text.isNotEmpty
             ? IconButton(
-                icon: Icon(Icons.clear, color: Colors.red,),
+                icon: Icon(
+                  Icons.clear,
+                  color: Colors.red,
+                ),
                 onPressed: () {
                   setState(() {
                     _searchController.clear();
-                    context.read<AlunoBloc>().add(GetAllAlunos()); // Recarrega os alunos ao limpar a pesquisa
+                    context.read<AlunoBloc>().add(
+                        GetAllAlunos()); // Recarrega os alunos ao limpar a pesquisa
                   });
                 },
               )
@@ -149,9 +173,13 @@ class _PesquisaAlunoPageState extends State<PesquisaAlunoPage> {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         _buildFilterButton('Todos'),
-        const SizedBox(width: 15,),
+        const SizedBox(
+          width: 15,
+        ),
         _buildFilterButton('Ativos'),
-        const SizedBox(width: 15,),
+        const SizedBox(
+          width: 15,
+        ),
         _buildFilterButton('Inativos'),
       ],
     );
@@ -166,15 +194,21 @@ class _PesquisaAlunoPageState extends State<PesquisaAlunoPage> {
           setState(() {
             _selectedFilter = label;
           });
-          context.read<AlunoBloc>().add(GetAllAlunos()); // Atualiza a lista com o filtro selecionado
+          context
+              .read<AlunoBloc>()
+              .add(GetAllAlunos()); // Atualiza a lista com o filtro selecionado
         },
         style: ElevatedButton.styleFrom(
-          foregroundColor: isSelected ? Colors.white : Colors.black, backgroundColor: isSelected ? personalColor : Colors.grey[200],
+          foregroundColor: isSelected ? Colors.white : Colors.black,
+          backgroundColor: isSelected ? personalColor : Colors.grey[200],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
         ),
-        child: Text(label, style: TextStyle(fontSize: 16),),
+        child: Text(
+          label,
+          style: TextStyle(fontSize: 16),
+        ),
       ),
     );
   }

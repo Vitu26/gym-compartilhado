@@ -228,15 +228,15 @@ class _PersonalPPageState extends State<PersonalPPage> {
   }
 
   void _cadastrarPersonal(BuildContext context) {
-    // Coleta todos os dados do estado atual do CadastroCubit
+    
     final cadastroState = context.read<CadastroCubit>().state;
 
-    // Cria um mapa com todos os dados necessários para o cadastro
+    
     final Map<String, dynamic> personalData = {
       'nome': widget.name,
       'email': widget.email,
       'password': widget.password,
-      'cpf': cpfController.text,  // Usando o CPF capturado na página
+      'cpf': cpfController.text,  
       'sobre': sobreController.text,
       'endereco': {
         'estado': estadoController.text,
@@ -251,10 +251,10 @@ class _PersonalPPageState extends State<PersonalPPage> {
       'especialidade-do-personal': especialidadeController.text,
     };
 
-    // Adiciona um print para verificar os dados
+    
     print('Dados do personal sendo enviados: ${jsonEncode(personalData)}');
 
-    // Cria um evento de cadastro com os dados coletados
+    
     context.read<PersonalBloc>().add(PersonalCadastro(personalData));
   }
 }

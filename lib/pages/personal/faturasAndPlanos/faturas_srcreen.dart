@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sprylife/pages/personal/faturasAndPlanos/criar_fatura.dart';
 import 'package:sprylife/pages/personal/faturasAndPlanos/planos_screen._page.dart';
 import 'package:sprylife/utils/colors.dart';
 
 class AlunoFaturaScreen extends StatefulWidget {
   final Map<String, dynamic> alunoData;
+  final Map<String, dynamic> personalData; // Adicione personalData aqui
 
-  AlunoFaturaScreen({required this.alunoData});
+  AlunoFaturaScreen({
+    required this.alunoData,
+    required this.personalData, // Receber também o personalData
+  });
 
   @override
   _AlunoFaturaScreenState createState() => _AlunoFaturaScreenState();
@@ -20,9 +25,10 @@ class _AlunoFaturaScreenState extends State<AlunoFaturaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Verifique se alunoData possui um 'id' válido
     final String alunoId =
         widget.alunoData['id']?.toString() ?? 'ID não disponível';
+    final String personalId = widget.personalData['id']?.toString() ??
+        'ID do personal não disponível';
 
     final double recebido = widget.alunoData['recebido'] != null
         ? widget.alunoData['recebido'].toDouble()
@@ -336,7 +342,6 @@ class _AlunoFaturaScreenState extends State<AlunoFaturaScreen> {
 
   Widget _buildPlanosContent() {
     final plano = widget.alunoData['planoAtual'];
-    final personalId = widget.alunoData['personal_id']?.toString();
 
     if (plano == null) {
       return Center(
@@ -355,26 +360,35 @@ class _AlunoFaturaScreenState extends State<AlunoFaturaScreen> {
               : Container(),
           SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {
-              // Verifica se o personalId não é nulo ou vazio
-              if (personalId != null && personalId.isNotEmpty) {
-                // Debug print para verificar o valor do personalId
-                debugPrint(
-                    'Navegando para PlanosScreen com personalId: $personalId');
+            onPressed: () async {
+              try {
+                final personalData =
+                    await getPersonalLogado(); // Buscando o personal logado
+                final String personalId = personalData['id'];
 
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => PlanosScreen(
-                      personalId: personalId,
+                if (personalId.isNotEmpty) {
+                  debugPrint(
+                      'Navegando para PlanosScreen com personalId: $personalId');
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => PlanosScreen(
+                        personalId:
+                            personalId, // Passando o ID do personal logado
+                      ),
                     ),
-                  ),
-                );
-              } else {
-                // Caso o personalId seja nulo ou vazio, mostre uma mensagem de erro
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'ID do personal não encontrado. Não é possível editar o plano.'),
+                    ),
+                  );
+                }
+              } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(
-                        'ID do personal não encontrado. Não é possível editar o plano.'),
+                    content: Text('Erro ao obter o personal logado: $e'),
                   ),
                 );
               }
@@ -438,6 +452,21 @@ class _AlunoFaturaScreenState extends State<AlunoFaturaScreen> {
         _startDate = picked.start;
         _endDate = picked.end;
       });
+    }
+  }
+
+  Future<Map<String, dynamic>> getPersonalLogado() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? personalId = prefs.getString('personal_id');
+    final String? personalNome = prefs.getString('personal_nome');
+
+    if (personalId != null && personalNome != null) {
+      return {
+        'id': personalId,
+        'nome': personalNome,
+      };
+    } else {
+      throw Exception('Nenhum personal logado encontrado');
     }
   }
 }

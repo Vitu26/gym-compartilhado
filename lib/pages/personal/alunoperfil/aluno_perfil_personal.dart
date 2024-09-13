@@ -7,8 +7,9 @@ import 'package:sprylife/widgets/custom_button.dart';
 
 class AlunoPerfilScreen extends StatelessWidget {
   final Map<String, dynamic>? alunoData;
+  final Map<String, dynamic>? personalData; // Adicione personalData aqui
 
-  AlunoPerfilScreen({required this.alunoData});
+  AlunoPerfilScreen({required this.alunoData, required this.personalData});
 
   @override
   Widget build(BuildContext context) {
@@ -61,41 +62,45 @@ class AlunoPerfilScreen extends StatelessWidget {
     );
   }
 
-Widget _buildHeader() {
-  // Verificação de valores nulos com fallback para valores padrão
-  final String nome = alunoData?['user']?['name']?.replaceAll(' ', '').toLowerCase() ?? 'default_image';
-  final String nomeExibicao = alunoData?['user']?['name'] ?? 'Nome Indisponível';
-  final String status = alunoData?['status']?.toString() ?? 'Status Indisponível'; // Conversão para string
-  final String cidade = alunoData?['address']?['cidade']?.toString() ?? 'Localização Indisponível'; // Conversão para string
+  Widget _buildHeader() {
+    // Verificação de valores nulos com fallback para valores padrão
+    final String nome =
+        alunoData?['user']?['name']?.replaceAll(' ', '').toLowerCase() ??
+            'default_image';
+    final String nomeExibicao =
+        alunoData?['user']?['name'] ?? 'Nome Indisponível';
+    final String status = alunoData?['status']?.toString() ??
+        'Status Indisponível'; // Conversão para string
+    final String cidade = alunoData?['address']?['cidade']?.toString() ??
+        'Localização Indisponível'; // Conversão para string
 
-  return Row(
-    children: [
-      CircleAvatar(
-        radius: 40,
-        backgroundImage: AssetImage('images/$nome.jpg'),
-      ),
-      SizedBox(width: 16),
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            nomeExibicao,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            status,
-            style: TextStyle(fontSize: 16, color: Colors.green),
-          ),
-          Text(
-            cidade,
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-        ],
-      ),
-    ],
-  );
-}
-
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 40,
+          backgroundImage: AssetImage('images/$nome.jpg'),
+        ),
+        SizedBox(width: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              nomeExibicao,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              status,
+              style: TextStyle(fontSize: 16, color: Colors.green),
+            ),
+            Text(
+              cidade,
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 
   Widget _buildActionButtons(BuildContext context) {
     return Column(
@@ -140,7 +145,10 @@ Widget _buildHeader() {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AlunoFaturaScreen(alunoData: alunoData!),
+              builder: (context) => AlunoFaturaScreen(
+                alunoData: alunoData!,
+                personalData: personalData!, // Passe personalData aqui
+              ),
             ),
           );
         } else if (label == 'Arquivos') {
@@ -167,7 +175,8 @@ Widget _buildHeader() {
   }
 
   Widget _buildObjectiveSection() {
-    final String objetivo = alunoData?['informacoes_comuns']?['objetivo'] ?? 'Objetivos não informados';
+    final String objetivo = alunoData?['informacoes_comuns']?['objetivo'] ??
+        'Objetivos não informados';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

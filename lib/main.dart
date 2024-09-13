@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sprylife/bloc/aluno/aluno_bloc.dart';
@@ -31,10 +32,19 @@ import 'package:sprylife/pages/pesquisar/filter_result.dart';
 import 'package:sprylife/pages/pesquisar/filter_screen.dart';
 import 'package:sprylife/pages/pesquisar/treiner_details.dart'; // Nova página do Trainer Details
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Esta função será chamada quando o aplicativo estiver em segundo plano ou fechado
+  print("Mensagem recebida em segundo plano ou fechada: ${message.messageId}");
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   runApp(MyApp());
 }
 
@@ -108,7 +118,8 @@ class MyApp extends StatelessWidget {
             final args = ModalRoute.of(context)!.settings.arguments
                 as Map<String, dynamic>;
             return AlunoPerfilScreen(
-                alunoData: args['alunoData']); // Passando alunoData
+                alunoData: args['alunoData'], // Passando alunoData
+                personalData: args['personalData'],); // Passando alunoData
           },
           AppRoutes.treinoDetalhes: (context) {
             final args = ModalRoute.of(context)!.settings.arguments as int;

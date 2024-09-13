@@ -153,7 +153,7 @@ class _NavBarStatePersonal extends State<NavBarPersonal> {
               );
             case 3:
               return MaterialPageRoute(
-                builder: (context) => ChatPage(),
+                builder: (context) => ChatListScreenPersonal(),
               );
             case 4:
               return MaterialPageRoute(
