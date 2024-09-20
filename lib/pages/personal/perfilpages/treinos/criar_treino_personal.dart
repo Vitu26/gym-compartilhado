@@ -65,7 +65,7 @@ class CriarRotinaDeTreinoScreen extends StatelessWidget {
                   labelText: 'Tipo de Treino',
                   border: OutlineInputBorder(),
                 ),
-                items: <String>['1', '2'] // 1 para semanal, 2 para numérico
+                items: <String>['1', '2']
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,

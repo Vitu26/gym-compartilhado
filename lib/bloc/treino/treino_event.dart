@@ -53,3 +53,14 @@ class DeleteTreino extends TreinoEvent {
   @override
   List<Object?> get props => [id];
 }
+
+
+// Adicione o evento de associação no arquivo treino_event.dart
+class AssociateTreinoToRoutine extends TreinoEvent {
+  final Map<String, dynamic> associarData;
+
+  const AssociateTreinoToRoutine(this.associarData);
+
+  @override
+  List<Object?> get props => [associarData];
+}

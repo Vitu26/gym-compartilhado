@@ -13,6 +13,32 @@ class TreinoBloc extends Bloc<TreinoEvent, TreinoState> {
     on<GetTreino>(_onGetTreino);
     on<UpdateTreino>(_onUpdateTreino);
     on<DeleteTreino>(_onDeleteTreino);
+    on<AssociateTreinoToRoutine>(_onAssociateTreinoToRoutine);
+  }
+
+  Future<void> _onAssociateTreinoToRoutine(
+      AssociateTreinoToRoutine event, Emitter<TreinoState> emit) async {
+    emit(TreinoLoading());
+    try {
+      final token = await getToken();
+      final response = await http.post(
+        Uri.parse('https://developerxpb.com.br/api/rotina-has-treinos'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(event.associarData),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        emit(TreinoSuccess('Treino associado à rotina com sucesso'));
+      } else {
+        emit(TreinoFailure(
+            'Erro ao associar treino à rotina. Status: ${response.statusCode}'));
+      }
+    } catch (e) {
+      emit(TreinoFailure(e.toString()));
+    }
   }
 
   Future<void> _onGetAllTreinos(
@@ -52,16 +78,92 @@ class TreinoBloc extends Bloc<TreinoEvent, TreinoState> {
     }
   }
 
+  // Future<void> _onCreateTreino(
+  //     CreateTreino event, Emitter<TreinoState> emit) async {
+  //   emit(TreinoLoading());
+  //   try {
+  //     final token = await getToken(); // Obtém o token de autorização
+  //     print('Token obtido: $token'); // Log do token
+
+  //     final treinoDataJson = jsonEncode(event.treinoData);
+  //     print(
+  //         'Dados do treino sendo enviados: $treinoDataJson'); // Log dos dados do treino
+
+  //     final response = await http.post(
+  //       Uri.parse('https://developerxpb.com.br/api/treino'),
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Authorization': 'Bearer $token',
+  //       },
+  //       body: treinoDataJson,
+  //     );
+
+  //     print('Status da resposta (criação de treino): ${response.statusCode}');
+  //     print(
+  //         'Corpo da resposta (criação de treino): ${response.body}'); // Log do corpo da resposta
+
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       final treinoData = jsonDecode(response.body)['data'];
+  //       final treinoId = treinoData['id'];
+
+  //       print('Treino criado com sucesso. Treino ID: $treinoId');
+
+  //       // Agora cria a associação na tabela rotina-has-treino
+  //       final rotinaHasTreinoData = {
+  //         'rotina-de-treino_id': event.rotinaDeTreinoId,
+  //         'treino_id': treinoId
+  //       };
+
+  //       print('Dados enviados para rotina-has-treino: $rotinaHasTreinoData');
+
+  //       final rotinaHasTreinoResponse = await http.post(
+  //         Uri.parse('https://developerxpb.com.br/api/rotina-has-treinos'),
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           'Authorization': 'Bearer $token',
+  //         },
+  //         body: jsonEncode(rotinaHasTreinoData),
+  //       );
+
+  //       print('Treino ID para associação: $treinoId');
+  //       ;
+  //       print('Dados enviados para rotina-has-treino: $rotinaHasTreinoData');
+
+  //       print(
+  //           'Status da resposta (associação treino e rotina): ${rotinaHasTreinoResponse.statusCode}');
+  //       print(
+  //           'Corpo da resposta (associação treino e rotina): ${rotinaHasTreinoResponse.body}'); // Log do corpo da resposta
+
+  //       if (rotinaHasTreinoResponse.statusCode == 200 ||
+  //           rotinaHasTreinoResponse.statusCode == 201) {
+  //         emit(TreinoSuccess('Treino criado e associado à rotina com sucesso'));
+  //         print('Associação entre treino e rotina criada com sucesso');
+  //       } else {
+  //         emit(TreinoFailure(
+  //             'Erro ao associar treino à rotina. Status: ${rotinaHasTreinoResponse.statusCode}'));
+  //         print(
+  //             'Erro ao associar treino à rotina. Status: ${rotinaHasTreinoResponse.statusCode}');
+  //         print('Corpo da resposta (erro): ${rotinaHasTreinoResponse.body}');
+  //       }
+  //     } else {
+  //       emit(TreinoFailure(
+  //           'Falha ao criar treino. Status: ${response.statusCode}'));
+  //       print('Falha ao criar treino: ${response.statusCode}');
+  //       print('Corpo da resposta (erro): ${response.body}');
+  //     }
+  //   } catch (e) {
+  //     emit(TreinoFailure(e.toString()));
+  //     print('Erro ao criar treino: $e');
+  //   }
+  // }
+
+  // treino_bloc.dart
   Future<void> _onCreateTreino(
       CreateTreino event, Emitter<TreinoState> emit) async {
     emit(TreinoLoading());
     try {
-      final token = await getToken(); // Obtém o token de autorização
-      print('Token obtido: $token'); // Log do token
-
+      final token = await getToken();
       final treinoDataJson = jsonEncode(event.treinoData);
-      print(
-          'Dados do treino sendo enviados: $treinoDataJson'); // Log dos dados do treino
 
       final response = await http.post(
         Uri.parse('https://developerxpb.com.br/api/treino'),
@@ -72,57 +174,16 @@ class TreinoBloc extends Bloc<TreinoEvent, TreinoState> {
         body: treinoDataJson,
       );
 
-      print('Status da resposta (criação de treino): ${response.statusCode}');
-      print(
-          'Corpo da resposta (criação de treino): ${response.body}'); // Log do corpo da resposta
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         final treinoData = jsonDecode(response.body)['data'];
-        final treinoId = treinoData['id'];
+        final treinoId = treinoData['id']; // Pega o ID do treino criado
 
+        emit(TreinoSuccess('Treino criado com sucesso', treinoId: treinoId));
         print('Treino criado com sucesso. Treino ID: $treinoId');
-
-        // Agora cria a associação na tabela rotina-has-treino
-        final rotinaHasTreinoData = {
-          'rotina-de-treino_id': event.rotinaDeTreinoId,
-          'treino_id': treinoId
-        };
-
-        print('Dados enviados para rotina-has-treino: $rotinaHasTreinoData');
-
-        final rotinaHasTreinoResponse = await http.post(
-          Uri.parse('https://developerxpb.com.br/api/rotina-has-treinos'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-          body: jsonEncode(rotinaHasTreinoData),
-        );
-
-        print('Treino ID para associação: $treinoId');;
-        print('Dados enviados para rotina-has-treino: $rotinaHasTreinoData');
-
-        print(
-            'Status da resposta (associação treino e rotina): ${rotinaHasTreinoResponse.statusCode}');
-        print(
-            'Corpo da resposta (associação treino e rotina): ${rotinaHasTreinoResponse.body}'); // Log do corpo da resposta
-
-        if (rotinaHasTreinoResponse.statusCode == 200 ||
-            rotinaHasTreinoResponse.statusCode == 201) {
-          emit(TreinoSuccess('Treino criado e associado à rotina com sucesso'));
-          print('Associação entre treino e rotina criada com sucesso');
-        } else {
-          emit(TreinoFailure(
-              'Erro ao associar treino à rotina. Status: ${rotinaHasTreinoResponse.statusCode}'));
-          print(
-              'Erro ao associar treino à rotina. Status: ${rotinaHasTreinoResponse.statusCode}');
-          print('Corpo da resposta (erro): ${rotinaHasTreinoResponse.body}');
-        }
       } else {
         emit(TreinoFailure(
             'Falha ao criar treino. Status: ${response.statusCode}'));
         print('Falha ao criar treino: ${response.statusCode}');
-        print('Corpo da resposta (erro): ${response.body}');
       }
     } catch (e) {
       emit(TreinoFailure(e.toString()));

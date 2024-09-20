@@ -36,11 +36,12 @@ class TreinoDetailLoaded extends TreinoState {
 // Estado de sucesso ao criar, atualizar ou deletar um treino
 class TreinoSuccess extends TreinoState {
   final String message;
+  final int? treinoId; // Adiciona o treinoId opcional
 
-  const TreinoSuccess(this.message);
+  const TreinoSuccess(this.message, {this.treinoId});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, treinoId];
 }
 
 // Estado de falha

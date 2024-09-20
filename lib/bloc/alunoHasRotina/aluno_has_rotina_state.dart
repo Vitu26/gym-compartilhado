@@ -12,12 +12,21 @@ class AlunoHasRotinaInitial extends AlunoHasRotinaState {}
 class AlunoHasRotinaLoading extends AlunoHasRotinaState {}
 
 class AlunoHasRotinaLoaded extends AlunoHasRotinaState {
-  final List<dynamic> rotinas;
+  final List<dynamic> data;
 
-  const AlunoHasRotinaLoaded(this.rotinas);
+  const AlunoHasRotinaLoaded(this.data);
 
   @override
-  List<Object> get props => [rotinas];
+  List<Object> get props => [data];
+}
+
+class AlunoHasRotinaSuccess extends AlunoHasRotinaState {
+  final String message;
+
+  const AlunoHasRotinaSuccess(this.message);
+
+  @override
+  List<Object> get props => [message];
 }
 
 class AlunoHasRotinaFailure extends AlunoHasRotinaState {

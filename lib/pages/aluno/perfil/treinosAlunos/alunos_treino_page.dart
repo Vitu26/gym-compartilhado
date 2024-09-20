@@ -25,7 +25,7 @@ class AlunoTreinosPage extends StatelessWidget {
             if (state is AlunoHasRotinaLoading) {
               return Center(child: CircularProgressIndicator());
             } else if (state is AlunoHasRotinaLoaded) {
-              final rotinas = state.rotinas;
+              final rotinas = state.data;
               if (rotinas.isEmpty) {
                 return Center(child: Column(
                   children: [

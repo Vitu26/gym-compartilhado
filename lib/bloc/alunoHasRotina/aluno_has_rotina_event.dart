@@ -7,6 +7,16 @@ abstract class AlunoHasRotinaEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class CreateAlunoHasRotina extends AlunoHasRotinaEvent {
+  final Map<String, dynamic> associacaoData;
+
+  const CreateAlunoHasRotina(this.associacaoData);
+
+  @override
+  List<Object> get props => [associacaoData]; // Corrigido para List<Object>
+}
+
+
 class FetchAlunoHasRotina extends AlunoHasRotinaEvent {
   final int alunoId;
 
@@ -15,3 +25,4 @@ class FetchAlunoHasRotina extends AlunoHasRotinaEvent {
   @override
   List<Object> get props => [alunoId];
 }
+

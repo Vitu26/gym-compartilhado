@@ -10,6 +10,7 @@ class AlunoHasRotinaBloc
     extends Bloc<AlunoHasRotinaEvent, AlunoHasRotinaState> {
   AlunoHasRotinaBloc() : super(AlunoHasRotinaInitial()) {
     on<FetchAlunoHasRotina>(_onFetchAlunoHasRotina);
+    on<CreateAlunoHasRotina>(_onCreateAlunoHasRotina);
   }
 
   Future<void> _onFetchAlunoHasRotina(
@@ -42,4 +43,35 @@ class AlunoHasRotinaBloc
       emit(AlunoHasRotinaFailure('Erro ao carregar rotinas: $e'));
     }
   }
+
+
+  Future<void> _onCreateAlunoHasRotina(
+    CreateAlunoHasRotina event,
+    Emitter<AlunoHasRotinaState> emit,
+  ) async {
+    emit(AlunoHasRotinaLoading());
+    try {
+      final token = await getToken(); // Obtém o token JWT
+      final response = await http.post(
+        Uri.parse('https://endereco_api/api/aluno-has-rotinas'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(event.associacaoData),
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 201) {
+        emit(AlunoHasRotinaSuccess('Associação criada com sucesso!'));
+      } else {
+        emit(AlunoHasRotinaFailure('Erro ao criar associação: ${response.statusCode}'));
+      }
+    } catch (e) {
+      emit(AlunoHasRotinaFailure('Erro ao criar associação: $e'));
+    }
+  }
 }
+

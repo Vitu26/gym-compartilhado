@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// Importando a tela CriarTreinoScreen
 import 'package:sprylife/pages/personal/criartreino/criar_treino.dart';
 import 'package:sprylife/pages/personal/criartreino/rotinas_treino_personal.dart';
 import 'package:sprylife/utils/colors.dart';
@@ -16,7 +15,7 @@ class AlunoTreinosScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2, // Número de abas
+      length: 2,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -33,7 +32,7 @@ class AlunoTreinosScreen extends StatelessWidget {
           children: [
             _buildHeader(),
             Divider(height: 1),
-            _buildTabBar(), // Agora o TabBar está abaixo do Header
+            _buildTabBar(),
             Expanded(
               child: TabBarView(
                 children: [
@@ -42,7 +41,7 @@ class AlunoTreinosScreen extends StatelessWidget {
                 ],
               ),
             ),
-            _buildAddTreinoButton(context), // Passando o contexto aqui
+            _buildAddTreinoButton(context),
           ],
         ),
       ),
@@ -58,7 +57,7 @@ class AlunoTreinosScreen extends StatelessWidget {
             radius: 40,
             backgroundColor: Colors.grey[300],
             child: Text(
-              alunoData['name']?[0] ?? '?',
+              alunoData['nome']?[0] ?? '?', // Corrigido para garantir que a inicial do nome seja exibida
               style: TextStyle(fontSize: 40, color: Colors.white),
             ),
           ),
@@ -67,7 +66,7 @@ class AlunoTreinosScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                alunoData['name'] ?? 'Nome Indisponível',
+                alunoData['nome'] ?? 'Nome Indisponível', // Corrigido para exibir corretamente o nome
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               Text(
@@ -147,25 +146,23 @@ class AlunoTreinosScreen extends StatelessWidget {
       child: Center(
         child: ElevatedButton(
           onPressed: () {
-            // Navigate to the routine selection screen
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => RotinasScreen(
                   personalId: alunoData['id'].toString(),
                   onRotinaSelected: (String rotinaDeTreinoId) {
-                    // When a routine is selected, navigate to CriarTreinoScreen
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => CriarTreinoPersonal(
                           personalsId: alunoData['id'].toString(),
-                          rotinaDeTreinoId:
-                              int.parse(rotinaDeTreinoId), // Pass the selected rotinaId
+                          alunoId: alunoData['id'],
+                          // rotinaDeTreinoId: int.parse(rotinaDeTreinoId),
                         ),
                       ),
                     );
-                  },
+                  }, alunoData: alunoData,
                 ),
               ),
             );

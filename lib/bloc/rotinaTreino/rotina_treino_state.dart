@@ -36,11 +36,12 @@ class RotinaDeTreinoDetailLoaded extends RotinaDeTreinoState {
 // Estado de sucesso ao criar, atualizar ou deletar uma rotina
 class RotinaDeTreinoSuccess extends RotinaDeTreinoState {
   final String message;
+  final int? rotinaDeTreinoId; // Adicionei o ID da rotina
 
-  const RotinaDeTreinoSuccess(this.message);
+  const RotinaDeTreinoSuccess(this.message, {this.rotinaDeTreinoId});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, rotinaDeTreinoId];
 }
 
 // Estado de falha

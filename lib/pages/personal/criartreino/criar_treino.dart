@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:sprylife/bloc/treino/treino_bloc.dart';
-import 'package:sprylife/bloc/treino/treino_event.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sprylife/bloc/alunoHasRotina/aluno_has_rotina_bloc.dart';
+import 'package:sprylife/bloc/alunoHasRotina/aluno_has_rotina_event.dart';
+import 'package:sprylife/bloc/rotinaTreino/rotina_treino_bloc.dart';
+import 'package:sprylife/bloc/rotinaTreino/rotina_treino_event.dart';
+import 'package:sprylife/bloc/rotinaTreino/rotina_treino_state.dart';
+import 'package:sprylife/pages/personal/criartreino/rotinas_treino_personal.dart';
 import 'package:sprylife/utils/colors.dart';
 import 'package:sprylife/widgets/custom_button.dart';
 import 'package:sprylife/widgets/textfield.dart';
 
 class CriarTreinoPersonal extends StatefulWidget {
   final String personalsId;
-  final int rotinaDeTreinoId; // Add the rotinaDeTreinoId here
+  final String alunoId; // Adiciona o alunoId aqui
 
-  CriarTreinoPersonal({required this.personalsId, required this.rotinaDeTreinoId}); // Include rotinaDeTreinoId
+  CriarTreinoPersonal({required this.personalsId, required this.alunoId});
 
   @override
   _CriarTreinoPersonalState createState() => _CriarTreinoPersonalState();
@@ -27,11 +32,24 @@ class _CriarTreinoPersonalState extends State<CriarTreinoPersonal> {
   int _selectedTipoIndex = 0;
   bool _permitirDownload = false;
 
+  final Map<String, int> _difficultyMap = {
+    'Adaptação': 1,
+    'Iniciante': 2,
+    'Intermediário': 3,
+    'Avançado': 4,
+  };
+
   @override
   void dispose() {
     _nomeController.dispose();
     _obsController.dispose();
     super.dispose();
+  }
+
+  Future<String?> getSavedPersonalId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(
+        'personal_id'); // Supondo que o ID do personal foi salvo com esta chave
   }
 
   @override
@@ -48,9 +66,6 @@ class _CriarTreinoPersonalState extends State<CriarTreinoPersonal> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
             onPressed: () => Navigator.of(context).pop(),
-            padding: const EdgeInsets.all(0),
-            constraints: const BoxConstraints(),
-            iconSize: 24,
           ),
           title: const Text(
             'CRIAR ROTINA DE TREINO',
@@ -106,40 +121,12 @@ class _CriarTreinoPersonalState extends State<CriarTreinoPersonal> {
               _buildPermissaoTreino(),
               const SizedBox(height: 30),
               CustomButton(
-                  text: 'Salvar',
-                  backgroundColor: personalColor,
-                  onPressed: () {
-                    final nome = _nomeController.text;
-                    if (nome.isNotEmpty &&
-                        _selectedDifficulty != null &&
-                        _startDate != null &&
-                        _endDate != null) {
-                      final treinoData = {
-                        "nome": nome,
-                        "data-fim": DateFormat('yyyy-MM-dd').format(_endDate!),
-                        "data-inicio":
-                            DateFormat('yyyy-MM-dd').format(_startDate!),
-                        "observacoes": _obsController.text,
-                        "baixar-treino": _permitirDownload ? "1" : "0",
-                        "tipo-treino_id": _selectedTipoIndex.toString(),
-                        "objetivo_id": _selectedObjectives.join(', '),
-                        "personal_id": widget.personalsId,
-                        "nivel-atividade_id": _selectedDifficulty,
-                      };
-
-                      // Pass both treinoData and the rotinaDeTreinoId
-                      context.read<TreinoBloc>().add(
-                            CreateTreino(treinoData, widget.rotinaDeTreinoId.toString()),
-                          );
-                      Navigator.of(context).pop();
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text(
-                                'Por favor, preencha todos os campos obrigatórios')),
-                      );
-                    }
-                  }),
+                text: 'Salvar',
+                backgroundColor: personalColor,
+                onPressed: () {
+                  _createTreinoAndAssociate(context);
+                },
+              ),
             ],
           ),
         ),
@@ -371,5 +358,114 @@ class _CriarTreinoPersonalState extends State<CriarTreinoPersonal> {
         ),
       ],
     );
+  }
+
+  // Função para criar a rotina de treino e associar ao aluno
+  // Função para criar a rotina de treino e associar ao aluno
+  void _createTreinoAndAssociate(BuildContext context) async {
+    final nome = _nomeController.text;
+
+    // Verificação dos campos obrigatórios antes de enviar a solicitação
+    if (nome.isNotEmpty &&
+        _selectedDifficulty != null &&
+        _startDate != null &&
+        _endDate != null) {
+      // Obtém o personal_id salvo
+      final personalId = await getSavedPersonalId();
+      debugPrint('Utilizando o personal_id: $personalId');
+
+      // Confirme que o ID correto está sendo utilizado
+      if (personalId == null) {
+        debugPrint('Erro: ID do personal não encontrado.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro: ID do personal não encontrado.')),
+        );
+        return;
+      }
+
+      // Converte a dificuldade selecionada para o seu ID correspondente
+      final dificuldadeId = _difficultyMap[_selectedDifficulty];
+
+      if (dificuldadeId == null) {
+        debugPrint('Erro: Dificuldade inválida selecionada.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Erro: Dificuldade inválida selecionada.')),
+        );
+        return;
+      }
+
+      // Prepare os dados da rotina de treino
+      final rotinaData = {
+        "data-fim": DateFormat('yyyy-MM-dd').format(_endDate!),
+        "data-inicio": DateFormat('yyyy-MM-dd').format(_startDate!),
+        "observacoes": _obsController.text,
+        "baixar-treino": _permitirDownload ? "1" : "0",
+        "tipo-treino_id": _selectedTipoIndex == 0 ? "1" : "2",
+        "objetivo_id": "1",
+        "personal_id": personalId, // Utilize o ID correto do personal
+        "nivel-atividade_id":
+            dificuldadeId.toString(), // Envia o ID da dificuldade
+      };
+
+      // Debug para garantir que os dados corretos estão sendo enviados
+      debugPrint('Dados da rotina sendo enviados: $rotinaData');
+
+      final rotinaBloc = context.read<RotinaDeTreinoBloc>();
+      rotinaBloc.add(CreateRotinaDeTreino(rotinaData));
+
+      rotinaBloc.stream.listen((state) {
+        if (state is RotinaDeTreinoSuccess && state.rotinaDeTreinoId != null) {
+          final rotinaDeTreinoId = state.rotinaDeTreinoId!;
+          _associateRoutineToStudent(rotinaDeTreinoId);
+          debugPrint(
+              'Rotina de treino criada com sucesso. ID: $rotinaDeTreinoId');
+
+          // Após criar e associar a rotina, redirecione para a tela de rotinas
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RotinasScreen(
+                personalId: personalId,
+                onRotinaSelected: (rotinaId) {
+                  // Lógica para quando uma rotina é selecionada na tela RotinasScreen
+                },
+                alunoData: {'id': widget.alunoId}, // Passe os dados necessários
+              ),
+            ),
+          );
+        } else if (state is RotinaDeTreinoFailure) {
+          debugPrint('Erro ao criar rotina de treino: ${state.error}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content:
+                    Text('Erro ao criar rotina de treino: ${state.error}')),
+          );
+        }
+      });
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content:
+                  Text('Por favor, preencha todos os campos obrigatórios')),
+        );
+      }
+    }
+  }
+
+  // Função para associar a rotina ao aluno
+  void _associateRoutineToStudent(int rotinaDeTreinoId) {
+    final associacaoData = {
+      "aluno_id": widget.alunoId,
+      "rotina-de-treino_id": rotinaDeTreinoId.toString(),
+    };
+
+    // Adicione uma checagem para evitar problemas ao acessar contextos desatualizados
+    if (mounted) {
+      context
+          .read<AlunoHasRotinaBloc>()
+          .add(CreateAlunoHasRotina(associacaoData));
+    }
   }
 }

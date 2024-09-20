@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sprylife/bloc/aluno/aluno_bloc.dart';
+import 'package:sprylife/bloc/alunoHasRotina/aluno_has_rotina_bloc.dart';
 import 'package:sprylife/bloc/categoriaExercicio/categoria_exercicio_bloc.dart';
 import 'package:sprylife/bloc/chat/chat_bloc.dart';
 import 'package:sprylife/bloc/exercicios/exericios_bloc.dart';
@@ -68,8 +69,6 @@ void main() async {
   runApp(MyApp());
 }
 
-
-
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -110,6 +109,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<ChatBloc>(
           create: (context) => ChatBloc(),
+        ),
+        BlocProvider<AlunoHasRotinaBloc>(
+          create: (context) => AlunoHasRotinaBloc(),
         ),
       ],
       child: MaterialApp(
