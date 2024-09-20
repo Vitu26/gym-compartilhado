@@ -2,9 +2,9 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp();
 
-exports.sendNotificationOnNewMessage = functions
+exports.sendNotificationOnNewChat = functions
     .region("us-central1")
-    .database.ref("/mensagens/{mensagemId}")
+    .database.ref("/chats/{chatId}")
     .onCreate((snapshot, context) => {
       const messageData = snapshot.val();
       const payload = {
@@ -23,4 +23,3 @@ exports.sendNotificationOnNewMessage = functions
             console.error("Erro ao enviar notificação:", error);
           });
     });
-
