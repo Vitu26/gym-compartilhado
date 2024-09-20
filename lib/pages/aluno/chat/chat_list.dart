@@ -11,14 +11,14 @@ import 'package:sprylife/widgets/custom_appbar_princi.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class ChatListScreen extends StatelessWidget {
-  // Função que verifica se existe uma conversa entre o aluno e o personal
+
   Future<bool> _hasConversation(String alunoId, String personalId) async {
-    // Ordena os IDs de forma consistente
+
     List<String> ids = [alunoId, personalId]..sort();
     String chatPath =
-        ids.join('_'); // Gera o caminho "alunoId_personalId" de forma ordenada
+        ids.join('_'); 
 
-    // Busca a conversa no Firebase Realtime Database
+
     DatabaseReference chatRef =
         FirebaseDatabase.instance.ref().child('chats').child(chatPath);
 
@@ -72,7 +72,7 @@ class ChatListScreen extends StatelessWidget {
                 builder: (context, personalState) {
                   if (personalState is PersonalSuccess) {
                     print(personalState
-                        .data); // Verifica o conteúdo dos personais
+                        .data); 
 
                     final Map<String, dynamic> personalMap = personalState.data;
 
@@ -145,7 +145,7 @@ class ChatListScreen extends StatelessWidget {
                                               receiverId: personal['id']
                                                   .toString(), // ID do personal
                                               alunoData: alunoState
-                                                  .data, // Passando os dados do aluno
+                                                  .data,
                                             ),
                                           ),
                                         );
@@ -188,19 +188,19 @@ class ChatListScreen extends StatelessWidget {
     );
   }
 
-  // Função para filtrar apenas os personais com conversas ativas
+
   Future<List<dynamic>> _filterConversations(
       String alunoId, List<dynamic> personalList) async {
-    // Use Future.wait para executar todas as verificações de conversas em paralelo
+
     List<Future<bool>> conversationChecks = personalList.map((personal) {
       final personalId = personal['id'].toString();
       return _hasConversation(alunoId, personalId);
     }).toList();
 
-    // Aguarde todos os futures serem resolvidos
+
     List<bool> hasConversations = await Future.wait(conversationChecks);
 
-    // Filtrar apenas os personais com conversas ativas
+
     List<dynamic> filteredPersonals = [];
     for (int i = 0; i < personalList.length; i++) {
       if (hasConversations[i]) {

@@ -43,10 +43,32 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  // Obter o token do dispositivo para notificações
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  // Solicitar permissão para notificações (importante para iOS)
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
+  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    print('Permissão concedida para notificações.');
+
+    // Obter o token do dispositivo
+    String? token = await messaging.getToken();
+    print("Token do dispositivo: $token");
+
+    // Salve o token em seu backend ou use como necessário
+  } else {
+    print('Permissão negada para notificações.');
+  }
 
   runApp(MyApp());
 }
+
+
 
 class MyApp extends StatelessWidget {
   @override
@@ -97,7 +119,8 @@ class MyApp extends StatelessWidget {
         routes: {
           AppRoutes.login: (context) => LoginScreen(),
           AppRoutes.pesquisarPersonal: (context) => PesquisarPersonal(),
-          AppRoutes.pesquisarPersonalLista: (context) => PesquisarPersonalLista(),
+          AppRoutes.pesquisarPersonalLista: (context) =>
+              PesquisarPersonalLista(),
           AppRoutes.home: (context) => HomeScreen(),
           AppRoutes.cadastroAluno: (context) => CadastroAlunoScreen(),
           AppRoutes.cadastroProfissionalScreen: (context) =>
@@ -113,13 +136,15 @@ class MyApp extends StatelessWidget {
               personalData: args['personalData'],
             ); // Passando personalData
           },
-          AppRoutes.cadastroAlunoPersonal: (context) => CadastroAlunoPersonalScreen(),
+          AppRoutes.cadastroAlunoPersonal: (context) =>
+              CadastroAlunoPersonalScreen(),
           AppRoutes.perfilAlunoPersonal: (context) {
             final args = ModalRoute.of(context)!.settings.arguments
                 as Map<String, dynamic>;
             return AlunoPerfilScreen(
-                alunoData: args['alunoData'], // Passando alunoData
-                personalData: args['personalData'],); // Passando alunoData
+              alunoData: args['alunoData'], // Passando alunoData
+              personalData: args['personalData'],
+            ); // Passando alunoData
           },
           AppRoutes.treinoDetalhes: (context) {
             final args = ModalRoute.of(context)!.settings.arguments as int;
@@ -149,6 +174,38 @@ class MyApp extends StatelessWidget {
           }
 
           return null; // Se não encontrar a rota, retorna null
+        },
+        builder: (context, child) {
+          // Configurar notificações quando o app está em primeiro plano
+          FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+            RemoteNotification? notification = message.notification;
+            AndroidNotification? android = message.notification?.android;
+
+            if (notification != null && android != null) {
+              FlutterLocalNotificationsPlugin().show(
+                notification.hashCode,
+                notification.title,
+                notification.body,
+                NotificationDetails(
+                  android: AndroidNotificationDetails(
+                    'channel_id',
+                    'channel_name',
+                    importance: Importance.max,
+                    priority: Priority.high,
+                    icon: '@mipmap/ic_launcher',
+                  ),
+                ),
+              );
+            }
+          });
+
+          // Ação ao clicar na notificação
+          FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+            print('Notificação clicada: ${message.data}');
+            // Adicione sua lógica de navegação ou ação ao clicar
+          });
+
+          return child!;
         },
       ),
     );

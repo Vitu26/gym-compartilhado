@@ -28,12 +28,12 @@ class _ChatScreenState extends State<ChatScreen> {
   File? _selectedFile;
   String? _selectedFileName;
   final TextEditingController _controller = TextEditingController();
-  final ScrollController _scrollController = ScrollController(); // Adicione isso para controlar a rolagem
+  final ScrollController _scrollController = ScrollController();
 
-  // Função para selecionar um arquivo (incluindo fotos)
+
   Future<void> _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.image, // Especificamente para imagens
+      type: FileType.image, 
     );
 
     if (result != null) {
@@ -74,15 +74,15 @@ class _ChatScreenState extends State<ChatScreen> {
                   if (state is ChatLoading) {
                     return Center(child: CircularProgressIndicator());
                   } else if (state is ChatLoaded) {
-                    // Quando as mensagens são carregadas, rola para o final
+
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       _scrollToBottom();
                     });
 
                     return ListView.builder(
-                      controller: _scrollController, // Adicione o controlador aqui
+                      controller: _scrollController,
                       padding: const EdgeInsets.symmetric(
-                        vertical: 10.0, // Espaço entre as mensagens e a AppBar
+                        vertical: 10.0,
                       ),
                       itemCount: state.messages.length,
                       itemBuilder: (context, index) {
@@ -125,15 +125,15 @@ class _ChatScreenState extends State<ChatScreen> {
                                           ),
                                         );
                                       } else {
-                                        // Caso não seja imagem, abra o arquivo
+
                                         launch(message['file_url']);
                                       }
                                     },
                                     child: message['file_url'].endsWith('.jpg') || message['file_url'].endsWith('.png')
                                         ? Image.network(
                                             message['file_url'],
-                                            width: 150, // Largura opcional
-                                            height: 150, // Altura opcional
+                                            width: 150,
+                                            height: 150,
                                             fit: BoxFit.cover,
                                           )
                                         : Text(
@@ -175,12 +175,12 @@ class _ChatScreenState extends State<ChatScreen> {
                       },
                     );
                   } else if (state is ChatMessageSent) {
-                    // Volta ao estado de carregamento de mensagens para exibir as atualizações
+
                     BlocProvider.of<ChatBloc>(context).add(LoadMessages(
                       senderId: widget.senderId,
                       receiverId: widget.receiverId,
                     ));
-                    return Container(); // Placeholder enquanto as mensagens são recarregadas
+                    return Container();
                   } else if (state is ChatError) {
                     return Center(child: Text('Erro: ${state.error}'));
                   } else {
@@ -201,14 +201,14 @@ class _ChatScreenState extends State<ChatScreen> {
       padding: const EdgeInsets.only(
         left: 8.0,
         right: 8.0,
-        bottom: 16.0, // Espaçamento da barra de digitação até a bottom navigation bar
-        top: 8.0, // Espaçamento entre o campo de texto e as mensagens
+        bottom: 16.0, 
+        top: 8.0, 
       ),
       child: Row(
         children: [
           IconButton(
             icon: Icon(Icons.attach_file),
-            onPressed: _pickFile, // Selecionar arquivo ou imagem
+            onPressed: _pickFile,
           ),
           Expanded(
             child: TextField(
@@ -230,17 +230,17 @@ class _ChatScreenState extends State<ChatScreen> {
                   senderId: widget.senderId,
                   receiverId: widget.receiverId,
                   message: _controller.text,
-                  file: _selectedFile, // Enviar arquivo ou imagem se houver
-                  fileName: _selectedFileName, // Nome do arquivo ou imagem
+                  file: _selectedFile,
+                  fileName: _selectedFileName,
                 ));
 
-                _controller.clear(); // Limpa o campo de texto após o envio
+                _controller.clear();
                 setState(() {
-                  _selectedFile = null; // Limpa o arquivo selecionado
-                  _selectedFileName = null; // Limpa o nome do arquivo selecionado
+                  _selectedFile = null;
+                  _selectedFileName = null; 
                 });
 
-                // Rola para o final após enviar a mensagem
+
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   _scrollToBottom();
                 });
