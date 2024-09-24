@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sprylife/bloc/planos/planos_event.dart';
 import 'package:sprylife/bloc/planos/planos_state.dart';
 import 'dart:convert';
@@ -63,39 +64,49 @@ class PlanoBloc extends Bloc<PlanoEvent, PlanoState> {
     }
   }
 
-  Future<void> _onCreatePlano(
-      CreatePlano event, Emitter<PlanoState> emit) async {
-    emit(PlanoLoading());
-    print("Iniciando criação de plano com os dados: ${event.planoData}");
-    try {
-      final token = await getToken(); // Obtém o token de autorização
+Future<void> _onCreatePlano(CreatePlano event, Emitter<PlanoState> emit) async {
+  emit(PlanoLoading());
+  print("Iniciando criação de plano com os dados: ${event.planoData}");
 
-      print('Dados que serão enviados: ${jsonEncode(event.planoData)}');
+  try {
+    // Busca o personal logado
+    final personalData = await getPersonalLogado();
+    final String personalId = personalData['id'];
 
-      final response = await http.post(
-        Uri.parse('https://developerxpb.com.br/api/planos'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(event.planoData),
-      );
-
-      print('Status da resposta: ${response.statusCode}');
-      print('Corpo da resposta: ${response.body}');
-
-      if (response.statusCode == 201) {
-        emit(PlanoSuccess('Plano criado com sucesso'));
-        print("Plano criado com sucesso.");
-      } else {
-        emit(PlanoFailure('Failed to create plano'));
-        print("Erro ao criar o plano: ${response.body}");
-      }
-    } catch (e) {
-      emit(PlanoFailure(e.toString()));
-      print("Erro ao criar o plano: $e");
+    if (personalId.isEmpty) {
+      emit(PlanoFailure('ID do personal não encontrado. Certifique-se de que o personal está logado.'));
+      return;
     }
+
+    final token = await getToken(); // Obtém o token de autorização
+
+    print('Dados que serão enviados: ${jsonEncode(event.planoData)}');
+
+    final response = await http.post(
+      Uri.parse('https://developerxpb.com.br/api/planos'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(event.planoData..['personal_id'] = personalId), // Adiciona o personal_id aos dados do plano
+    );
+
+    print('Status da resposta: ${response.statusCode}');
+    print('Corpo da resposta: ${response.body}');
+
+    if (response.statusCode == 201) {
+      emit(PlanoSuccess('Plano criado com sucesso'));
+      print("Plano criado com sucesso.");
+    } else {
+      emit(PlanoFailure('Failed to create plano'));
+      print("Erro ao criar o plano: ${response.body}");
+    }
+  } catch (e) {
+    emit(PlanoFailure(e.toString()));
+    print("Erro ao criar o plano: $e");
   }
+}
+
 
   Future<void> _onGetPlano(GetPlano event, Emitter<PlanoState> emit) async {
     emit(PlanoLoading());
@@ -187,4 +198,20 @@ class PlanoBloc extends Bloc<PlanoEvent, PlanoState> {
       emit(PlanoFailure(e.toString()));
     }
   }
+
+
+Future<Map<String, dynamic>> getPersonalLogado() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final String? personalId = prefs.getString('personal_id');
+  final String? personalNome = prefs.getString('personal_nome');
+
+  if (personalId != null && personalNome != null) {
+    return {
+      'id': personalId,
+      'nome': personalNome,
+    };
+  } else {
+    throw Exception('Nenhum personal logado encontrado');
+  }
+}
 }

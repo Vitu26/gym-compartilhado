@@ -7,19 +7,16 @@ import 'package:sprylife/bloc/planos/planos_bloc.dart';
 import 'package:sprylife/bloc/planos/planos_event.dart';
 import 'package:sprylife/bloc/planos/planos_state.dart';
 
+// PlanosScreen
 class PlanosScreen extends StatelessWidget {
   final String personalId;
 
   PlanosScreen({required this.personalId}) {
-    // Verifica se o personalId não está vazio ao instanciar a tela
     assert(personalId.isNotEmpty, 'O personalId não pode ser nulo ou vazio');
-    print('Personal ID fornecido: $personalId'); // Debug
   }
 
   @override
   Widget build(BuildContext context) {
-    print('Construindo PlanosScreen com personalId: $personalId'); // Debug
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
@@ -43,14 +40,18 @@ class PlanosScreen extends StatelessWidget {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             if (personalId.isNotEmpty) {
-              Navigator.of(context).push(
+              await Navigator.of(context)
+                  .push(
                 MaterialPageRoute(
-                  builder: (context) =>
-                      CriarPlanoScreen(personalId: personalId),
+                  builder: (context) => CriarPlanoScreen(personalId: personalId),
                 ),
-              );
+              )
+                  .then((_) {
+                // Após retornar da tela de criação do plano, dispare o evento para recarregar os planos
+                BlocProvider.of<PlanoBloc>(context).add(GetAllPlanos(personalId));
+              });
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -79,15 +80,11 @@ class PlanosScreen extends StatelessWidget {
       itemBuilder: (context, index) {
         final plano = planos[index];
 
-        final String nomePlano =
-            plano['nome-do-plano'] ?? 'Nome não disponível';
-        final String assinaturaRecorrente = plano['assinatura-recorrente']
-            .toString(); // Convertendo int para String
+        final String nomePlano = plano['nome-do-plano'] ?? 'Nome não disponível';
+        final String assinaturaRecorrente = plano['assinatura-recorrente'].toString();
         final String periodicidade = plano['periodicidade'] ?? 'Desconhecida';
-        final String descricaoPlano =
-            plano['descricao-do-plano'] ?? 'Sem descrição';
-        final String valorPlano =
-            plano['valor-do-plano'].toString(); // Convertendo int para String
+        final String descricaoPlano = plano['descricao-do-plano'] ?? 'Sem descrição';
+        final String valorPlano = plano['valor-do-plano'].toString();
 
         return Card(
           elevation: 2,
@@ -97,8 +94,7 @@ class PlanosScreen extends StatelessWidget {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                    'Pagamento: ${assinaturaRecorrente == '1' ? 'Recorrente' : 'Manual'}'),
+                Text('Pagamento: ${assinaturaRecorrente == '1' ? 'Recorrente' : 'Manual'}'),
                 Text('Fatura a cada: ${_getPeriodicidadeText(periodicidade)}'),
                 Text(descricaoPlano),
                 Text('Valor de cada fatura: $valorPlano'),
@@ -110,13 +106,11 @@ class PlanosScreen extends StatelessWidget {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => CriarPlanoScreen(
-                          personalId: plano['personal_id']
-                              .toString()), // Convertendo int para String
+                          personalId: plano['personal_id'].toString()),
                     ),
                   );
                 } else if (result == 'excluir') {
-                  _showDeleteConfirmationDialog(context,
-                      plano['id'].toString()); // Convertendo int para String
+                  _showDeleteConfirmationDialog(context, plano['id'].toString());
                 }
               },
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[

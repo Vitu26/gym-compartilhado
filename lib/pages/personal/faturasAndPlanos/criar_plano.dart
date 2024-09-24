@@ -113,7 +113,7 @@ class CriarPlanoScreen extends StatelessWidget {
                                 ? descricaoController.text
                                 : 'Sem descrição',
                         'assinatura-recorrente':
-                            assinaturaRecorrente ? '0' : '1',
+                            assinaturaRecorrente ? '1' : '0', // Corrigido aqui
                         'personal_id':
                             personalId, // Certifique-se de que o ID é válido
                       };

@@ -6,23 +6,28 @@ import 'package:sprylife/bloc/rotinaHasTreino/rotina_has_treino_state.dart';
 import 'package:sprylife/pages/personal/perfilpages/treinos/criar_treino_screen.dart';
 import 'package:sprylife/pages/personal/perfilpages/treinos/treinos_detalhe_page.dart';
 
-class RotinaTreinoDetalhes extends StatelessWidget {
-  final int rotinaId; // Correct type is int
+class RotinaTreinoDetalhes extends StatefulWidget {
+  final int rotinaId;
 
   RotinaTreinoDetalhes({required this.rotinaId});
 
   @override
-  Widget build(BuildContext context) {
-    print('Página de detalhes da rotina carregada com rotinaId: $rotinaId');
+  State<RotinaTreinoDetalhes> createState() => _RotinaTreinoDetalhesState();
+}
 
-    // Disparar o evento para buscar os treinos ao carregar a página
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      print(
-          'Disparando evento GetAllRotinasHasTreinos para rotinaId: $rotinaId');
-      context
-          .read<RotinaHasTreinoBloc>()
-          .add(GetAllRotinasHasTreinos(rotinaId: rotinaId.toString()));
-    });
+class _RotinaTreinoDetalhesState extends State<RotinaTreinoDetalhes> {
+  @override
+  void initState() {
+    super.initState();
+    // Disparar o evento para buscar os treinos ao iniciar o estado
+    context
+        .read<RotinaHasTreinoBloc>()
+        .add(GetAllRotinasHasTreinos(rotinaId: widget.rotinaId.toString()));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print('Página de detalhes da rotina carregada com rotinaId: ${widget.rotinaId}');
 
     return Scaffold(
       appBar: AppBar(
@@ -54,13 +59,16 @@ class RotinaTreinoDetalhes extends StatelessWidget {
                   title: Text(treino['nome']),
                   subtitle: Text(treino['observacoes']),
                   onTap: () {
-                    // Navegar para a página de detalhes do treino
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            TreinoDetalhesPage(treinoId: treino['id']),
-                      ),
-                    );
+                    // Verificar se o widget está montado antes de navegar
+                    if (mounted) {
+                      print('Navegando para a página de detalhes do treino com id: ${treino['id']}');
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              TreinoDetalhesPage(treinoId: treino['id']),
+                        ),
+                      );
+                    }
                   },
                 );
               },
@@ -76,13 +84,15 @@ class RotinaTreinoDetalhes extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          print(
-              'Botão de adicionar treino pressionado, abrindo tela de criação.');
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => CriarTreinoRotina(rotinaId: rotinaId),
-            ),
-          );
+          // Verificar se o widget está montado antes de navegar
+          if (mounted) {
+            print('Botão de adicionar treino pressionado, abrindo tela de criação.');
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => CriarTreinoRotina(rotinaId: widget.rotinaId),
+              ),
+            );
+          }
         },
         child: Icon(Icons.add),
       ),

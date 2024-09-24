@@ -7,11 +7,11 @@ import 'package:sprylife/utils/colors.dart';
 
 class AlunoFaturaScreen extends StatefulWidget {
   final Map<String, dynamic> alunoData;
-  final Map<String, dynamic> personalData; // Adicione personalData aqui
+  final Map<String, dynamic> personalData;
 
   AlunoFaturaScreen({
     required this.alunoData,
-    required this.personalData, // Receber também o personalData
+    required this.personalData,
   });
 
   @override
@@ -81,51 +81,52 @@ class _AlunoFaturaScreenState extends State<AlunoFaturaScreen> {
   }
 
   Widget _buildFloatingActionButton() {
-    String? personalId = widget.alunoData['personal_id']?.toString();
+  if (_selectedIndex == 1) {
+    return FloatingActionButton(
+      onPressed: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => CriarFaturaScreen(
+              alunoId: widget.alunoData['id'].toString(),
+            ),
+          ),
+        );
+      },
+      child: Icon(Icons.add),
+      backgroundColor: personalColor,
+    );
+  } else if (_selectedIndex == 2) {
+    return FloatingActionButton(
+      onPressed: () async {
+        try {
+          final personalData = await getPersonalLogado();
+          final String personalId = personalData['id'];
 
-    if (_selectedIndex == 1) {
-      return FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => CriarFaturaScreen(
-                alunoId: widget.alunoData['id'].toString(),
+          if (personalId.isNotEmpty) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => PlanosScreen(personalId: personalId),
               ),
-            ),
-          );
-        },
-        child: Icon(Icons.add),
-        backgroundColor: personalColor,
-      );
-    } else if (_selectedIndex == 2 &&
-        personalId != null &&
-        personalId.isNotEmpty) {
-      return FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => PlanosScreen(personalId: personalId),
-            ),
-          );
-        },
-        child: Icon(Icons.add),
-        backgroundColor: personalColor,
-      );
-    } else if (_selectedIndex == 2 &&
-        (personalId == null || personalId.isEmpty)) {
-      return FloatingActionButton(
-        onPressed: () {
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('ID do personal não encontrado.')),
+            );
+          }
+        } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('ID do personal não encontrado.')),
+            SnackBar(content: Text('Erro ao obter o personal logado: $e')),
           );
-        },
-        child: Icon(Icons.add),
-        backgroundColor: personalColor,
-      );
-    }
-
-    return SizedBox.shrink(); // Retorna um widget vazio quando não há ação
+        }
+      },
+      child: Icon(Icons.add),
+      backgroundColor: personalColor,
+    );
   }
+
+  return SizedBox.shrink(); // Retorna um widget vazio quando não há ação
+}
+
 
   Widget _buildHeader() {
     final userData = widget.alunoData['user'];
