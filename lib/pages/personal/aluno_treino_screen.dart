@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sprylife/bloc/rotinaHasTreino/rotina_has_treino_bloc.dart';
+import 'package:sprylife/bloc/rotinaHasTreino/rotina_has_treino_event.dart';
+import 'package:sprylife/bloc/rotinaHasTreino/rotina_has_treino_state.dart';
 import 'package:sprylife/pages/personal/criartreino/criar_treino.dart';
 import 'package:sprylife/pages/personal/criartreino/rotinas_treino_personal.dart';
 import 'package:sprylife/utils/colors.dart';
@@ -36,7 +40,7 @@ class AlunoTreinosScreen extends StatelessWidget {
             Expanded(
               child: TabBarView(
                 children: [
-                  _buildTreinoContent(),
+                  _buildTreinoContent(context),
                   _buildAerobicoContent(),
                 ],
               ),
@@ -99,32 +103,49 @@ class AlunoTreinosScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTreinoContent() {
-    if (treinos.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            'Você ainda não adicionou uma rotina de treino para este aluno!',
-            style: TextStyle(color: Colors.grey, fontSize: 16),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
-    } else {
-      return ListView.builder(
-        padding: EdgeInsets.all(16.0),
-        itemCount: treinos.length,
-        itemBuilder: (context, index) {
-          final treino = treinos[index];
-          return ListTile(
-            leading: Icon(Icons.fitness_center, color: personalColor, size: 30),
-            title: Text(treino['nome'] ?? 'Treino'),
-            subtitle: Text(treino['descricao'] ?? 'Descrição do treino'),
-          );
+  Widget _buildTreinoContent(BuildContext context) {
+    return BlocProvider(
+      create: (context) => RotinaHasTreinoBloc()..add(GetAllRotinasHasTreinos(rotinaId: alunoData['id'].toString())),
+      child: BlocBuilder<RotinaHasTreinoBloc, RotinaHasTreinoState>(
+        builder: (context, state) {
+          if (state is RotinaHasTreinoLoading) {
+            return Center(child: CircularProgressIndicator());
+          } else if (state is RotinaHasTreinoLoaded) {
+            if (state.rotinasHasTreinos.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'Você ainda não adicionou uma rotina de treino para este aluno!',
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
+            } else {
+              return ListView.builder(
+                padding: EdgeInsets.all(16.0),
+                itemCount: state.rotinasHasTreinos.length,
+                itemBuilder: (context, index) {
+                  final treino = state.rotinasHasTreinos[index];
+                  return ListTile(
+                    leading: Icon(Icons.fitness_center, color: personalColor, size: 30),
+                    title: Text(treino['nome'] ?? 'Treino'),
+                    subtitle: Text(treino['descricao'] ?? 'Descrição do treino'),
+                  );
+                },
+              );
+            }
+          } else if (state is RotinaHasTreinoFailure) {
+            return Center(
+              child: Text('Erro ao carregar as rotinas de treino: ${state.error}'),
+            );
+          } else {
+            return Container();
+          }
         },
-      );
-    }
+      ),
+    );
   }
 
   Widget _buildAerobicoContent() {
@@ -162,7 +183,8 @@ class AlunoTreinosScreen extends StatelessWidget {
                         ),
                       ),
                     );
-                  }, alunoData: alunoData,
+                  },
+                  alunoData: alunoData,
                 ),
               ),
             );

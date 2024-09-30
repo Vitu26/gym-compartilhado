@@ -146,6 +146,7 @@ class ChatListScreen extends StatelessWidget {
                                                   .toString(), // ID do personal
                                               alunoData: alunoState
                                                   .data,
+                                                  receiverName: personal['nome'],
                                             ),
                                           ),
                                         );

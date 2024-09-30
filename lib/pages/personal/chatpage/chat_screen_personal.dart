@@ -12,11 +12,13 @@ import 'package:url_launcher/url_launcher.dart';
 class ChatScreenPersonal extends StatefulWidget {
   final String senderId;
   final String receiverId;
+  final String receiverName; // Adicione o nome do destinatário
   final Map<String, dynamic> personalData;
 
   ChatScreenPersonal({
     required this.senderId,
     required this.receiverId,
+    required this.receiverName, // Adicione aqui também
     required this.personalData,
   });
 
@@ -28,7 +30,26 @@ class _ChatScreenPersonalState extends State<ChatScreenPersonal> {
   File? _selectedFile;
   String? _selectedFileName;
   final TextEditingController _controller = TextEditingController();
-  final ScrollController _scrollController = ScrollController(); // Controlador de rolagem
+  final ScrollController _scrollController =
+      ScrollController(); // Controlador de rolagem
+  bool isUploading = false;
+  bool canSendMessage =
+      false; // Novo estado para controlar se o botão deve ser habilitado
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Adiciona um listener para atualizar o estado sempre que o texto mudar
+    _controller.addListener(_checkCanSendMessage);
+  }
+
+  // Função para verificar se o botão deve ser habilitado
+  void _checkCanSendMessage() {
+    setState(() {
+      canSendMessage = _controller.text.isNotEmpty || _selectedFile != null;
+    });
+  }
 
   // Função para selecionar um arquivo
   Future<void> _pickFile() async {
@@ -38,6 +59,8 @@ class _ChatScreenPersonalState extends State<ChatScreenPersonal> {
       setState(() {
         _selectedFile = File(result.files.single.path!);
         _selectedFileName = result.files.single.name;
+        canSendMessage =
+            true; // Atualiza o estado para habilitar o botão de envio
       });
     }
   }
@@ -62,7 +85,9 @@ class _ChatScreenPersonalState extends State<ChatScreenPersonal> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: CustomAppBar(
-          title: 'Conversa',
+          // Alteração no título da AppBar
+          title:
+              'Conversa com ${widget.receiverName}', // Exibe o nome da pessoa
         ),
         body: SafeArea(
           child: Column(
@@ -78,7 +103,8 @@ class _ChatScreenPersonalState extends State<ChatScreenPersonal> {
                     });
 
                     return ListView.builder(
-                      controller: _scrollController, // Adiciona o controlador aqui
+                      controller:
+                          _scrollController, // Adiciona o controlador aqui
                       padding: const EdgeInsets.symmetric(
                         vertical: 10.0, // Espaço entre as mensagens e a AppBar
                       ),
@@ -108,17 +134,33 @@ class _ChatScreenPersonalState extends State<ChatScreenPersonal> {
                                   : CrossAxisAlignment.start,
                               children: [
                                 if (message['file_url'] != null)
-                                  GestureDetector(
-                                    onTap: () {
-                                      launch(message['file_url']);
-                                    },
-                                    child: Image.network(
-                                      message['file_url']!, // Exibe a imagem
-                                      width: 150,
-                                      height: 150,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
+                                  message['file_name']?.endsWith('.pdf') == true
+                                      ? GestureDetector(
+                                          onTap: () {
+                                            launch(message['file_url']);
+                                          },
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.picture_as_pdf,
+                                                  color: Colors.red),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                  message['file_name'] ?? 'PDF')
+                                            ],
+                                          ),
+                                        )
+                                      : GestureDetector(
+                                          onTap: () {
+                                            launch(message['file_url']);
+                                          },
+                                          child: Image.network(
+                                            message[
+                                                'file_url']!, // Exibe a imagem
+                                            width: 150,
+                                            height: 150,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
                                 if (message['message'] != null)
                                   Text(
                                     message['message'],
@@ -173,9 +215,10 @@ class _ChatScreenPersonalState extends State<ChatScreenPersonal> {
   Widget _buildMessageInput(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(
-        left: 8.0, 
-        right: 8.0, 
-        bottom: 16.0, // Espaçamento da barra de digitação até a bottom navigation bar
+        left: 8.0,
+        right: 8.0,
+        bottom:
+            16.0, // Espaçamento da barra de digitação até a bottom navigation bar
         top: 8.0, // Espaçamento entre o campo de texto e as mensagens
       ),
       child: Row(
@@ -187,6 +230,10 @@ class _ChatScreenPersonalState extends State<ChatScreenPersonal> {
           Expanded(
             child: TextField(
               controller: _controller,
+              onChanged: (text) {
+                setState(
+                    () {}); // Atualiza o estado para habilitar/desabilitar o botão
+              },
               decoration: InputDecoration(
                 hintText: 'Digite sua mensagem',
                 border: OutlineInputBorder(
@@ -198,28 +245,30 @@ class _ChatScreenPersonalState extends State<ChatScreenPersonal> {
           ),
           IconButton(
             icon: Icon(Icons.send),
-            onPressed: () {
-              if (_controller.text.isNotEmpty || _selectedFile != null) {
-                BlocProvider.of<ChatBloc>(context).add(SendMessage(
-                  senderId: widget.senderId,
-                  receiverId: widget.receiverId,
-                  message: _controller.text,
-                  file: _selectedFile, // Enviar arquivo se houver
-                  fileName: _selectedFileName, // Nome do arquivo
-                ));
+            onPressed: (_controller.text.isNotEmpty || _selectedFile != null)
+                ? () {
+                    // Envia a mensagem e/ou o arquivo
+                    BlocProvider.of<ChatBloc>(context).add(SendMessage(
+                      senderId: widget.senderId,
+                      receiverId: widget.receiverId,
+                      message: _controller.text,
+                      file: _selectedFile, // Enviar arquivo se houver
+                      fileName: _selectedFileName, // Nome do arquivo
+                    ));
 
-                _controller.clear(); // Limpa o campo de texto após o envio
-                setState(() {
-                  _selectedFile = null; // Limpa o arquivo selecionado
-                  _selectedFileName = null; // Limpa o nome do arquivo selecionado
-                });
+                    _controller.clear(); // Limpa o campo de texto após o envio
+                    setState(() {
+                      _selectedFile = null; // Limpa o arquivo selecionado
+                      _selectedFileName =
+                          null; // Limpa o nome do arquivo selecionado
+                    });
 
-                // Rola para o final após enviar a mensagem
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _scrollToBottom();
-                });
-              }
-            },
+                    // Rola para o final após enviar a mensagem
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _scrollToBottom();
+                    });
+                  }
+                : null, // Desabilita o botão se não há texto ou arquivo
           ),
         ],
       ),

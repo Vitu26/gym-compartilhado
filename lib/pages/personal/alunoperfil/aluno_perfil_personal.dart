@@ -69,10 +69,10 @@ class AlunoPerfilScreen extends StatelessWidget {
             'default_image';
     final String nomeExibicao =
         alunoData?['user']?['name'] ?? 'Nome Indisponível';
-    final String status = alunoData?['status']?.toString() ??
-        'Status Indisponível'; // Conversão para string
+    final String status =
+        alunoData?['status']?.toString() ?? 'Status Indisponível';
     final String cidade = alunoData?['address']?['cidade']?.toString() ??
-        'Localização Indisponível'; // Conversão para string
+        'Localização Indisponível';
 
     return Row(
       children: [
@@ -84,9 +84,16 @@ class AlunoPerfilScreen extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              nomeExibicao,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            // Nome do aluno com truncamento para não quebrar a tela
+            Container(
+              width: 200, // Defina a largura máxima para o nome
+              child: Text(
+                nomeExibicao,
+                maxLines: 1, // Limitar a apenas uma linha
+                overflow: TextOverflow
+                    .ellipsis, // Adicionar reticências se o texto for muito longo
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
             ),
             Text(
               status,

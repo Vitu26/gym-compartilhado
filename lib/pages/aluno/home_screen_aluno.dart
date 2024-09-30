@@ -101,7 +101,6 @@ class _HomeAlunoScreenState extends State<HomeAlunoScreen> {
               ),
             ),
           ),
-          _buildTopPersonalsSection(),
           const SizedBox(height: 25,)
         ],
       ),
@@ -158,54 +157,6 @@ class _HomeAlunoScreenState extends State<HomeAlunoScreen> {
   }
 
   // Função para exibir os personals no topo
-  Widget _buildTopPersonalsSection() {
-    if (_isLoadingPersonals) {
-      return Center(child: CircularProgressIndicator());
-    }
-
-    if (_personals.isEmpty) {
-      return Text(
-        "Nenhum personal encontrado.",
-        style: TextStyle(fontSize: 16, color: Colors.grey),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Top Personals",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              "Ver todos",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.orange,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 100,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: _personals.length,
-            itemBuilder: (context, index) {
-              final personal = _personals[index];
-              return _buildPersonalAvatar(personal);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
   // Widget para exibir o avatar dos personals
   Widget _buildPersonalAvatar(Map<String, dynamic> personal) {
     final data = personal['data'];

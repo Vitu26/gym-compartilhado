@@ -26,8 +26,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       String chatPath = _getChatPath(event.senderId, event.receiverId);
       DatabaseReference chatRef = _database.child(chatPath);
 
-      print(
-          'Carregando mensagens entre ${event.senderId} e ${event.receiverId} no caminho: $chatPath');
+      print('Carregando mensagens entre ${event.senderId} e ${event.receiverId} no caminho: $chatPath');
 
       // Escutando mudanças em tempo real no nó do chat
       await chatRef.onValue.listen((event) {
@@ -42,8 +41,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
               'message': value['message'],
               'timestamp': value['timestamp'],
               'file_url': value['file_url'], // Verifique se há arquivos
-              'file_name':
-                  value['file_name'], // Verifique se há nome de arquivo
+              'file_name': value['file_name'], // Verifique se há nome de arquivo
             });
           });
         }
@@ -65,43 +63,54 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
-  Future<void> _onSendMessage(
-      SendMessage event, Emitter<ChatState> emit) async {
+  Future<void> _onSendMessage(SendMessage event, Emitter<ChatState> emit) async {
     try {
       String chatPath = _getChatPath(event.senderId, event.receiverId);
       DatabaseReference chatRef = _database.child(chatPath);
 
-      print(
-          'Enviando mensagem de ${event.senderId} para ${event.receiverId} no caminho: $chatPath');
+      print('Enviando mensagem de ${event.senderId} para ${event.receiverId} no caminho: $chatPath');
 
       String? fileUrl;
 
-      // Se um arquivo foi selecionado, faça upload no Firebase Storage
+      // Se um arquivo foi selecionado, faça o upload no Firebase Storage
       if (event.file != null) {
         final storageRef = FirebaseStorage.instance
             .ref()
             .child('chat_files')
-            .child(
-                '${DateTime.now().millisecondsSinceEpoch}_${event.fileName}');
-        await storageRef.putFile(event.file!);
-        fileUrl = await storageRef.getDownloadURL();
+            .child('${event.senderId}_${event.receiverId}_${DateTime.now().millisecondsSinceEpoch}_${event.fileName}');
+        
+        print('Iniciando upload do arquivo: ${event.fileName}');
+        
+        // Faça o upload do arquivo
+        UploadTask uploadTask = storageRef.putFile(event.file!);
+
+        // Monitore o progresso do upload
+        uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+          print('Progresso do upload: ${(snapshot.bytesTransferred / snapshot.totalBytes) * 100} %');
+        }).onError((error) {
+          print('Erro durante o upload: $error');
+        });
+
+        // Obtenha a URL de download após o upload bem-sucedido
+        TaskSnapshot taskSnapshot = await uploadTask;
+        fileUrl = await taskSnapshot.ref.getDownloadURL();
+        print('Upload concluído. URL do arquivo: $fileUrl');
       }
 
       // Enviar mensagem com ou sem arquivo
       await chatRef.push().set({
         'sender': event.senderId,
         'message': event.message.isNotEmpty ? event.message : null, // Mensagem
-        'file_url': fileUrl, // URL do arquivo (pode ser null)
-        'file_name': event.fileName, // Nome do arquivo (pode ser null)
+        'file_url': fileUrl, // URL do arquivo, se existir
+        'file_name': event.fileName, // Nome do arquivo, se existir
         'timestamp': DateTime.now().millisecondsSinceEpoch,
       });
 
       print('Mensagem enviada com sucesso');
-      emit(ChatMessageSent()); // Estado de sucesso no envio
+      emit(ChatMessageSent());
     } catch (e) {
       print('Erro ao enviar mensagem: $e');
       emit(ChatError("Erro ao enviar mensagem: $e"));
     }
   }
 }
-

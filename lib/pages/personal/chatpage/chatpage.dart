@@ -122,6 +122,7 @@ class ChatListScreenPersonal extends StatelessWidget {
                                             builder: (context) => ChatScreenPersonal(
                                               senderId: personalId, // ID do personal logado
                                               receiverId: aluno['id'].toString(), personalData: personalState.data, // ID do aluno
+                                              receiverName: aluno['nome'],
                                             ),
                                           ),
                                         );

@@ -6,13 +6,14 @@ import 'package:sprylife/bloc/aluno/aluno_state.dart';
 import 'package:sprylife/pages/personal/aluno_treino_screen.dart';
 import 'package:sprylife/pages/personal/alunoperfil/aluno_perfil_personal.dart';
 import 'package:sprylife/pages/personal/cadastro_aluno_personal.dart';
+import 'package:sprylife/pages/personal/chatpage/chat_screen_personal.dart';
 import 'package:sprylife/pages/personal/faturasAndPlanos/faturas_srcreen.dart';
-import 'package:sprylife/pages/personal/notifica%C3%A7%C3%B5es/notificacoes.dart';
+import 'package:sprylife/pages/personal/notificações/notificacoes.dart';
 import 'package:sprylife/pages/personal/pesquisarAluno/pesquisa_aluno_page.dart';
 import 'package:sprylife/utils/colors.dart';
 import 'package:sprylife/widgets/calendario.dart';
 
-class HomePersonalScreen extends StatelessWidget {
+class HomePersonalScreen extends StatefulWidget {
   final Map<String, dynamic> personalData;
   final List<Map<String, dynamic>> notifications;
   final Map<String, dynamic>? alunoData;
@@ -24,10 +25,22 @@ class HomePersonalScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // Emite o evento para carregar alunos quando a tela for construída
-    context.read<AlunoBloc>().add(GetAllAlunos());
+  _HomePersonalScreenState createState() => _HomePersonalScreenState();
+}
 
+class _HomePersonalScreenState extends State<HomePersonalScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Dispara o evento de carregar alunos se ainda não houver dados carregados
+    final alunoBloc = context.read<AlunoBloc>();
+    if (alunoBloc.state is! AlunoSuccess) {
+      alunoBloc.add(GetAllAlunos());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -52,6 +65,7 @@ class HomePersonalScreen extends StatelessWidget {
   // Construir saudação na tela, incluindo o nome do personal
   Widget _buildGreeting(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,7 +78,7 @@ class HomePersonalScreen extends StatelessWidget {
               ),
             ),
             Text(
-              '${personalData['nome']}', // Nome do personal vindo de 'personalData'
+              '${widget.personalData['nome']}', // Nome do personal vindo de 'personalData'
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -72,7 +86,7 @@ class HomePersonalScreen extends StatelessWidget {
             ),
             const SizedBox(height: 5),
             const Text(
-              'Seu perfil recebeu XX visitas nos últimos XX dias',
+              'Seu perfil recebeu XX visitas\n nos últimos XX dias',
               style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],
@@ -83,7 +97,7 @@ class HomePersonalScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => NotificationScreen(
-                    notifications: notifications
+                    notifications: widget.notifications
                         .map((notification) => notification.map(
                             (key, value) => MapEntry(key, value.toString())))
                         .toList(),
@@ -92,7 +106,7 @@ class HomePersonalScreen extends StatelessWidget {
               },
               icon: const Icon(Icons.notifications),
             ),
-            if (notifications
+            if (widget.notifications
                 .where((notification) => notification['status'] == 'new')
                 .isNotEmpty)
               Positioned(
@@ -105,9 +119,8 @@ class HomePersonalScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Text(
-                    notifications
-                        .where(
-                            (notification) => notification['status'] == 'new')
+                    widget.notifications
+                        .where((notification) => notification['status'] == 'new')
                         .length
                         .toString(),
                     style: const TextStyle(color: Colors.white, fontSize: 12),
@@ -136,13 +149,13 @@ class HomePersonalScreen extends StatelessWidget {
           'Planos',
           Icons.loop,
           () {
-            if (alunoData != null) {
+            if (widget.alunoData != null) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => AlunoFaturaScreen(
-                    alunoData: alunoData!,
-                    personalData: personalData, // Passe personalData aqui
+                    alunoData: widget.alunoData!,
+                    personalData: widget.personalData, // Passe personalData aqui
                   ),
                 ),
               );
@@ -163,7 +176,7 @@ class HomePersonalScreen extends StatelessWidget {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => AlunoTreinosScreen(
-                  alunoData: personalData, // Passa os dados do personal
+                  alunoData: widget.personalData, // Passa os dados do personal
                   treinos: [
                     {'nome': 'Treino A', 'descricao': 'Treino de força'},
                     {'nome': 'Treino B', 'descricao': 'Treino de resistência'},
@@ -197,93 +210,93 @@ class HomePersonalScreen extends StatelessWidget {
   }
 
   // Seção para os botões relacionados ao aluno
-Widget _buildStudentSection(BuildContext context) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      ElevatedButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => CadastroAlunoPersonalScreen(),
-            ),
-          );
-        },
-        child: const Text(
-          'Cadastrar novo aluno',
-          style: TextStyle(color: Colors.white, fontSize: 18),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: personalColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ),
-      ),
-      const SizedBox(height: 10),
-      ElevatedButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => PesquisaAlunoPage(),
-            ),
-          );
-        },
-        child: const Text(
-          'Pesquisar aluno',
-          style: TextStyle(color: personalColor, fontSize: 18),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-            side: const BorderSide(
-              color: personalColor,
-              width: 1.0,
-            ),
-          ),
-        ),
-      ),
-      const SizedBox(height: 20),
-      BlocBuilder<AlunoBloc, AlunoState>(
-        builder: (context, state) {
-          if (state is AlunoLoading) {
-            return Center(child: CircularProgressIndicator());
-          } else if (state is AlunoFailure) {
-            return Center(child: Text('Erro ao carregar alunos: ${state.error}'));
-          } else if (state is AlunoSuccess) {
-            final students = state.data;
-
-            if (students.isEmpty) {
-              return Center(child: Text('Nenhum aluno encontrado.'));
-            }
-
-            // Certifique-se de retornar uma lista de widgets com `.toList()`
-            return Column(
-              children: students.take(4).map<Widget>((student) {
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: NetworkImage(student['foto']),
-                    radius: 25,
-                  ),
-                  title: Text(student['nome']),
-                  subtitle: Text(student['informacoes_comuns']?['objetivo'] ??
-                      'Objetivo não disponível'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    _showStudentDialog(context, student);
-                  },
-                );
-              }).toList(), // Aqui está a correção com toList()
+  Widget _buildStudentSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => CadastroAlunoPersonalScreen(),
+              ),
             );
-          }
-          return SizedBox();
-        },
-      ),
-    ],
-  );
-}
+          },
+          child: const Text(
+            'Cadastrar novo aluno',
+            style: TextStyle(color: Colors.white, fontSize: 18),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: personalColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => PesquisaAlunoPage(),
+              ),
+            );
+          },
+          child: const Text(
+            'Pesquisar aluno',
+            style: TextStyle(color: personalColor, fontSize: 18),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+              side: const BorderSide(
+                color: personalColor,
+                width: 1.0,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        BlocBuilder<AlunoBloc, AlunoState>(
+          builder: (context, state) {
+            if (state is AlunoLoading) {
+              return Center(child: CircularProgressIndicator());
+            } else if (state is AlunoFailure) {
+              return Center(
+                  child: Text('Erro ao carregar alunos: ${state.error}'));
+            } else if (state is AlunoSuccess) {
+              final students = state.data;
 
+              if (students.isEmpty) {
+                return Center(child: Text('Nenhum aluno encontrado.'));
+              }
+
+              // Certifique-se de retornar uma lista de widgets com `.toList()`
+              return Column(
+                children: students.take(4).map<Widget>((student) {
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: NetworkImage(student['foto']),
+                      radius: 25,
+                    ),
+                    title: Text(student['nome']),
+                    subtitle: Text(student['informacoes_comuns']?['objetivo'] ??
+                        'Objetivo não disponível'),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {
+                      _showStudentDialog(context, student);
+                    },
+                  );
+                }).toList(), // Aqui está a correção com toList()
+              );
+            }
+            return SizedBox();
+          },
+        ),
+      ],
+    );
+  }
 
   // Diálogo de opções para cada aluno
   void _showStudentDialog(BuildContext context, Map<String, dynamic> student) {
@@ -313,7 +326,25 @@ Widget _buildStudentSection(BuildContext context) {
                   children: [
                     _buildDialogButton(Icons.assignment, 'Atividades'),
                     _buildDialogButton(Icons.access_time, 'Histórico'),
-                    _buildDialogButton(Icons.message, 'Chat'),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatScreenPersonal(
+                              senderId: widget.personalData['id']
+                                  .toString(), // ID do personal
+                              receiverId:
+                                  student['id'].toString(), // ID do aluno
+                              personalData: widget.personalData,
+                              receiverName: student['nome'],
+                            ),
+                          ),
+                        );
+                      },
+                      child: _buildDialogButton(Icons.message, 'Chat'),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -327,7 +358,7 @@ Widget _buildStudentSection(BuildContext context) {
                           return AlunoPerfilScreen(
                             alunoData: student,
                             personalData:
-                                personalData, // Passe o personalData aqui
+                                widget.personalData, // Passe o personalData aqui
                           );
                         },
                       ),
