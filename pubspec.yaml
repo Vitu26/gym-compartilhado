@@ -53,6 +53,8 @@ dependencies:
   flutter_local_notifications: ^17.2.2
   firebase_messaging: ^14.7.10
   firebase_core: ^2.20.0
+  brasil_fields: ^1.15.0
+  gradient_icon: ^2.0.9
 
 
 dev_dependencies:

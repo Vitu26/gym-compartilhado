@@ -2,24 +2,33 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:perfil_professor/components/button.dart';
-import 'package:perfil_professor/components/colors.dart';
-import 'package:perfil_professor/components/progress_bar.dart';
-import 'package:perfil_professor/pages/curriculum_page.dart';
 import 'package:brasil_fields/brasil_fields.dart';
 import 'package:sprylife/components/button.dart';
 import 'package:sprylife/pages/cadastro/cadastro_professor/curriculo_page.dart';
 import 'package:sprylife/utils/colors.dart';
 import 'package:sprylife/widgets/progress_widget.dart';
 
-class PerfilPage extends StatefulWidget {
-  const PerfilPage({super.key});
+class NomeCpfPage extends StatefulWidget {
+  final String email;
+  final String phone;
+  final String password;
+  final String selectedGender;
+  final List<String> selectedModalities;
+
+  const NomeCpfPage({
+    super.key,
+    required this.email,
+    required this.phone,
+    required this.password,
+    required this.selectedGender,
+    required this.selectedModalities,
+  });
 
   @override
-  State<PerfilPage> createState() => _PerfilPageState();
+  State<NomeCpfPage> createState() => _NomeCpfPageState();
 }
 
-class _PerfilPageState extends State<PerfilPage> {
+class _NomeCpfPageState extends State<NomeCpfPage> {
   final imagePicker = ImagePicker();
   File? imageFile;
 
@@ -204,14 +213,31 @@ class _PerfilPageState extends State<PerfilPage> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const CurriculumPage()),
+              MaterialPageRoute(
+                builder: (context) => CurriculumPage(
+                  email: widget.email,
+                  phone: widget.phone,
+                  password: widget.password,
+                  selectedGender: widget.selectedGender,
+                  selectedModalities: widget.selectedModalities,
+                  name: nameController.text,
+                  cpf: cpfController.text,
+                  cref: crefController.text,
+                  redesSociais: redesController.text,
+                  imageFile: imageFile,
+                ),
+              ),
             );
           },
         ),
       ),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const ProgressBar(currentStep: 2, totalSteps: 4),
+        title: const ProgressBar(
+          currentStep: 2,
+          totalSteps: 4,
+          color: personalColor,
+        ),
       ),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(

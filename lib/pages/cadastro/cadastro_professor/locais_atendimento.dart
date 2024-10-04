@@ -1,8 +1,40 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sprylife/models/cadastro_aluno_model.dart';
+import 'package:sprylife/bloc/personal/personal_bloc.dart';
+import 'package:sprylife/bloc/personal/personal_event.dart';
 
 class LocaisAtendimentoScreen extends StatefulWidget {
+  final String email;
+  final String phone;
+  final String password;
+  final String selectedGender;
+  final List<String> selectedModalities;
+  final String name;
+  final String cpf;
+  final String cref;
+  final String redesSociais;
+  final String especializacao;
+  final String qualificacoes;
+  final File? imageFile;
+
+  const LocaisAtendimentoScreen({
+    super.key,
+    required this.email,
+    required this.phone,
+    required this.password,
+    required this.selectedGender,
+    required this.selectedModalities,
+    required this.name,
+    required this.cpf,
+    required this.cref,
+    required this.redesSociais,
+    required this.especializacao,
+    required this.qualificacoes,
+    this.imageFile,
+  });
+
   @override
   _LocaisAtendimentoScreenState createState() => _LocaisAtendimentoScreenState();
 }
@@ -12,7 +44,7 @@ class _LocaisAtendimentoScreenState extends State<LocaisAtendimentoScreen> {
   bool atendimentoPresencial = false;
   bool aulaExperimental = false;
   bool isPresencialSelected = false;
-  
+
   final TextEditingController bairroController = TextEditingController();
   final TextEditingController academiaController = TextEditingController();
   final TextEditingController novaAcademiaController = TextEditingController();
@@ -150,7 +182,7 @@ class _LocaisAtendimentoScreenState extends State<LocaisAtendimentoScreen> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
-                // Ação ao clicar no botão "Salvar"
+                _cadastrarPersonal(context);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue.shade800,
@@ -165,5 +197,33 @@ class _LocaisAtendimentoScreenState extends State<LocaisAtendimentoScreen> {
         ),
       ),
     );
+  }
+
+  void _cadastrarPersonal(BuildContext context) {
+    final Map<String, dynamic> personalData = {
+      'nome': widget.name,
+      'email': widget.email,
+      'password': widget.password,
+      'cpf': widget.cpf,
+      'sobre': widget.qualificacoes,
+      'endereco': {
+        'estado': 'Preencha', // Adicionar valores reais conforme necessidade
+        'cidade': 'Preencha',
+        'bairro': bairroController.text,
+        'rua': 'Preencha',
+        'complemento': 'Preencha',
+        'numero': 'Preencha',
+      },
+      'confef': 'Preencha', // Pode ser ajustado conforme a necessidade
+      'cref': widget.cref,
+      'especialidade-do-personal': widget.especializacao,
+      'atendimento_online': atendimentoOnline ? '1' : '0',
+      'atendimento_presencial': atendimentoPresencial ? '1' : '0',
+      'aula_experimental': aulaExperimental ? '1' : '0',
+    };
+
+    print('Dados do personal sendo enviados: $personalData');
+
+    context.read<PersonalBloc>().add(PersonalCadastro(personalData));
   }
 }

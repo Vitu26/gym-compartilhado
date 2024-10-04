@@ -1,9 +1,36 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:sprylife/components/button.dart';
+import 'package:sprylife/components/colors.dart';
+import 'package:sprylife/pages/cadastro/cadastro_professor/locais_atendimento.dart';
 import 'package:sprylife/widgets/progress_widget.dart';
 
 class CurriculumPage extends StatefulWidget {
-  const CurriculumPage({super.key});
+  final String email;
+  final String phone;
+  final String password;
+  final String selectedGender;
+  final List<String> selectedModalities;
+  final String name;
+  final String cpf;
+  final String cref;
+  final String redesSociais;
+  final File? imageFile;
+
+  const CurriculumPage({
+    super.key,
+    required this.email,
+    required this.phone,
+    required this.password,
+    required this.selectedGender,
+    required this.selectedModalities,
+    required this.name,
+    required this.cpf,
+    required this.cref,
+    required this.redesSociais,
+    this.imageFile,
+  });
 
   @override
   State<CurriculumPage> createState() => _CurriculumPageState();
@@ -23,7 +50,22 @@ class _CurriculumPageState extends State<CurriculumPage> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const Atendimento()),
+              MaterialPageRoute(
+                builder: (context) => LocaisAtendimentoScreen(
+                  email: widget.email,
+                  phone: widget.phone,
+                  password: widget.password,
+                  selectedGender: widget.selectedGender,
+                  selectedModalities: widget.selectedModalities,
+                  name: widget.name,
+                  cpf: widget.cpf,
+                  cref: widget.cref,
+                  redesSociais: widget.redesSociais,
+                  imageFile: widget.imageFile,
+                  especializacao: especController.text,
+                  qualificacoes: qualiController.text,
+                ),
+              ),
             );
           },
         ),
@@ -31,7 +73,7 @@ class _CurriculumPageState extends State<CurriculumPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const ProgressBar(currentStep: 3, totalSteps: 4),
+        title: const ProgressBar(currentStep: 3, totalSteps: 4, color: personalColor,),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),

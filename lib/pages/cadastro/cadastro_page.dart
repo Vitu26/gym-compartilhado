@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sprylife/pages/cadastro/cadastro_aluno/complete_cadastro_aluno.dart';
 import 'package:sprylife/pages/cadastro/cadastro_aluno/gender_page.dart';
-import 'package:sprylife/pages/cadastro/cadastro_professor/personal_info_page.dart';
+import 'package:sprylife/pages/cadastro/cadastro_professor/perfil_page_perfonal.dart';
 import 'package:sprylife/utils/colors.dart';
 import 'package:sprylife/widgets/textfield_login.dart';
 
@@ -139,11 +138,10 @@ class _CadastroScreenState extends State<CadastroScreen> {
               onPressed: termsAccepted
                   ? () {
                       Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => PersonalPPage(
+                        builder: (context) => ProfessorPage(
                           email: emailController.text,
                           phone: phoneController.text,
                           password: passwordController.text,
-                          name: '',
                         ),
                       ));
                     }

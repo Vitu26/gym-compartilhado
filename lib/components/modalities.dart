@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:perfil_professor/components/colors.dart';
+import 'package:sprylife/components/colors.dart';
+
 
 class Modalities extends StatefulWidget {
   final List<String> selectedModalities;

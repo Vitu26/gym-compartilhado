@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:perfil_professor/components/button.dart';
-import 'package:perfil_professor/components/custom_container.dart';
-import 'package:perfil_professor/components/gender_option.dart';
-import 'package:perfil_professor/components/gender_selections.dart';
-import 'package:perfil_professor/components/modalities.dart';
-import 'package:perfil_professor/components/progress_bar.dart';
-import 'package:perfil_professor/pages/perfil_page.dart';
-import 'package:perfil_professor/components/colors.dart';
+import 'package:sprylife/components/button.dart';
+import 'package:sprylife/components/colors.dart';
+import 'package:sprylife/components/custom_container.dart';
+import 'package:sprylife/components/gender_option.dart';
+import 'package:sprylife/components/gender_selections.dart';
+import 'package:sprylife/components/modalities.dart';
+import 'package:sprylife/components/progress_bar.dart';
+import 'package:sprylife/pages/cadastro/cadastro_professor/nome_cpf_page.dart'; // Próxima página
 
 class ProfessorPage extends StatefulWidget {
-  const ProfessorPage({super.key});
+  final String email;
+  final String phone;
+  final String password;
+
+  const ProfessorPage({
+    super.key,
+    required this.email,
+    required this.phone,
+    required this.password,
+  });
 
   @override
   State<ProfessorPage> createState() => _ProfessorPageState();
@@ -281,11 +290,17 @@ class _ProfessorPageState extends State<ProfessorPage> {
             child: Button(
               text: 'Próximo',
               onPressed: () {
-                // Navegar para a próxima página
+                // Navegar para a próxima página e passar os dados
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => PerfilPage(), // Próxima página
+                    builder: (context) => NomeCpfPage(
+                      email: widget.email,
+                      phone: widget.phone,
+                      password: widget.password,
+                      selectedGender: selectedGender ?? 'Prefiro não informar',
+                      selectedModalities: selectedModalities,
+                    ),
                   ),
                 );
               },
