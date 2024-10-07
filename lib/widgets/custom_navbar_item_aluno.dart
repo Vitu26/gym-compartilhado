@@ -17,30 +17,58 @@ class CustomNavBarItemAluno extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double iconSize = 20;  // Reduced icon size
-    Color selectedColor = alunoCor;
+    double iconSize = 20; // Tamanho reduzido do ícone
+    Color selectedColor = alunoCor2;
     Color unselectedColor = Colors.grey;
 
-    return Expanded(  // Ensure each item takes up the available space
+    return Expanded(
       child: GestureDetector(
         onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
+          alignment: Alignment.center,
           children: <Widget>[
-            Icon(
-              icon,
-              size: iconSize,  // Icon size
-              color: isSelected ? selectedColor : unselectedColor,
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Transform.translate(
+                  offset: isSelected
+                      ? const Offset(0, -5)
+                      : const Offset(
+                          0, 0), // Move o ícone para cima quando selecionado
+                  child: Icon(
+                    icon,
+                    size: iconSize,
+                    color: isSelected ? selectedColor : unselectedColor,
+                  ),
+                ),
+                const SizedBox(
+                    height: 6), // Espaçamento entre o ícone e o texto
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? selectedColor : unselectedColor,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 6),  // Gap between icon and label
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? selectedColor : unselectedColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
+            if (isSelected)
+              Positioned(
+                top: -10, // Mova o círculo para cima
+                child: Container(
+                  width: 35, // Largura ajustada para o semicírculo
+                  height: 20, // Altura ajustada
+                  decoration: const BoxDecoration(
+                    color: alunoCor2, // Cor do semicírculo
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(40),
+                      bottomRight: Radius.circular(40),
+                    ), // Forma do semicírculo
+                  ),
+                ),
               ),
-            ),
           ],
         ),
       ),

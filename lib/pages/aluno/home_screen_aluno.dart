@@ -1,9 +1,12 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
+import 'package:sprylife/bloc/alunoHasRotina/aluno_has_rotina_bloc.dart';
+import 'package:sprylife/bloc/alunoHasRotina/aluno_has_rotina_event.dart';
 import 'package:sprylife/pages/personal/notifica%C3%A7%C3%B5es/notificacoes.dart';
 import 'package:sprylife/utils/colors.dart';
 import 'package:sprylife/utils/token_storege.dart';
@@ -27,32 +30,51 @@ class HomeAlunoScreen extends StatefulWidget {
 
 class _HomeAlunoScreenState extends State<HomeAlunoScreen> {
   List<dynamic> treinos = [];
-  List<Map<String, dynamic>> _personals = [];
-  bool _isLoadingPersonals = true;
+  bool _isLoadingTreinos = true;
 
   @override
   void initState() {
     super.initState();
-    _loadPersonals(); // Carregar os personals no init
+    _loadAlunoRotinas();
+    // _loadTreinos(); // Carregar as rotinas de treino no init
   }
 
-  // Função para carregar os personals
-  Future<void> _loadPersonals() async {
+  // Função para carregar as rotinas de treino do aluno
+  // Future<void> _loadTreinos() async {
+  //   try {
+  //     final rotinas = await fetchAlunoHasRotinas(
+  //         widget.alunoData['id']); // Chama a função que busca as rotinas
+  //     setState(() {
+  //       treinos = rotinas; // Armazena as rotinas de treino na variável treinos
+  //       _isLoadingTreinos = false; // Atualiza o indicador de carregamento
+  //     });
+  //   } catch (e) {
+  //     print('Erro ao carregar rotinas de treino: $e');
+  //     setState(() {
+  //       _isLoadingTreinos = false;
+  //     });
+  //   }
+  // }
+
+  void _loadAlunoRotinas() async {
     try {
-      List<Map<String, dynamic>> personals = await _fetchRandomPersonals();
+      // Carrega as rotinas associadas ao aluno
+      final rotinas = await fetchRotinasAluno(
+          widget.alunoData['id'].toString()); // Converte para String
+
       setState(() {
-        _personals = personals;
-        _isLoadingPersonals = false;
+        if (rotinas.isNotEmpty) {
+          print('Rotinas encontradas: $rotinas');
+          // Processa as rotinas, exibe no UI, etc.
+        } else {
+          print('Nenhuma rotina associada encontrada.');
+        }
       });
     } catch (e) {
-      print('Erro ao carregar personals: $e');
-      setState(() {
-        _isLoadingPersonals = false;
-      });
+      print('Erro ao carregar rotinas de treino: $e');
     }
   }
 
-  // Widget build
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,19 +117,19 @@ class _HomeAlunoScreenState extends State<HomeAlunoScreen> {
                     weekDayTextColor: Colors.grey,
                   ),
                   const SizedBox(height: 30),
-                  _buildMeusTreinosSection(treinos),
+                  _buildMeusTreinosSection(treinos), // Exibir os treinos
                   const SizedBox(height: 30),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 25,)
+          const SizedBox(height: 25)
         ],
       ),
     );
   }
 
-  // Widget para "Meus Treinos"
+  // Widget para exibir a seção "Meus Treinos"
   Widget _buildMeusTreinosSection(List<dynamic> treinos) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,59 +153,37 @@ class _HomeAlunoScreenState extends State<HomeAlunoScreen> {
           ],
         ),
         const SizedBox(height: 10),
-        treinos.isEmpty
-            ? Text(
-                "Você não tem rotinas de treino cadastradas.",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              )
-            : SizedBox(
-                height: 200,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: treinos.length,
-                  itemBuilder: (context, index) {
-                    return _buildTreinoCard(
-                      treinos[index]['title'],
-                      treinos[index]['instructor'],
-                      treinos[index]['imagePath'],
-                      treinos[index]['rating'],
-                      treinos[index]['category'],
-                    );
-                  },
-                ),
-              ),
+        _isLoadingTreinos
+            ? Center(child: CircularProgressIndicator())
+            : treinos.isEmpty
+                ? Text(
+                    "Você não tem rotinas de treino cadastradas.",
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  )
+                : SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: treinos.length,
+                      itemBuilder: (context, index) {
+                        final treino =
+                            treinos[index]; // Pega o treino de cada índice
+                        return _buildTreinoCard(
+                          treino['nome'], // Certifique-se de que 'nome' existe
+                          treino['instructor'] ?? 'Instrutor desconhecido',
+                          treino['foto'] ??
+                              'images/default_treino.png', // Certifique-se de que a imagem está correta
+                          '5', // Ajuste o campo de avaliação (rating) conforme necessário
+                          treino['category'] ?? 'Categoria desconhecida',
+                        );
+                      },
+                    ),
+                  ),
       ],
     );
   }
 
-  // Função para exibir os personals no topo
-  // Widget para exibir o avatar dos personals
-  Widget _buildPersonalAvatar(Map<String, dynamic> personal) {
-    final data = personal['data'];
-    String nomeCompleto = data['nome'] ?? 'Nome desconhecido';
-    String primeiroNome =
-        nomeCompleto.split(' ').first; // Pega apenas o primeiro nome
-
-    return Padding(
-      padding: const EdgeInsets.only(right: 10),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 35,
-            backgroundImage: data['foto'] != null
-                ? NetworkImage(data['foto'])
-                : AssetImage('images/default_avatar.png') as ImageProvider,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            primeiroNome, // Exibe apenas o primeiro nome
-            style: TextStyle(fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
-
+  // Widget para exibir cada card de treino
   Widget _buildTreinoCard(String title, String instructor, String imagePath,
       String rating, String category) {
     return Container(
@@ -261,166 +261,110 @@ class _HomeAlunoScreenState extends State<HomeAlunoScreen> {
       ),
     );
   }
-}
 
-// Função para gerar uma lista de IDs aleatórios
-List<int> _generateRandomIds(int count, int maxId) {
-  Random random = Random();
-  Set<int> randomIds = {};
-  while (randomIds.length < count) {
-    randomIds.add(random.nextInt(maxId) + 1); // Gera números de 1 até maxId
-  }
-  print('IDs aleatórios gerados: $randomIds'); // Log dos IDs gerados
-  return randomIds.toList();
-}
+  // Future<List<dynamic>> fetchAlunoHasRotinas(int alunoId) async {
+  //   final token = await getToken(); // Pega o token de autenticação
+  //   final response = await http.get(
+  //     Uri.parse(
+  //         'https://developerxpb.com.br/api/alunos-has-rotinas/$alunoId'), // Corrigido para utilizar o ID do aluno
+  //     headers: {
+  //       'Authorization': 'Bearer $token',
+  //     },
+  //   );
 
-// Função para buscar os dados de um profissional baseado no ID
+  //   if (response.statusCode == 200) {
+  //     final data = jsonDecode(response.body);
+  //     print('Rotinas de treino recebidas: $data');
 
-Future<Map<String, dynamic>> _fetchPersonalById(int id) async {
-  print('entrou nessa função');
-  final token = await getToken();
-  print('Buscando personal com ID: $id'); // Log do ID sendo buscado
-  final response = await http.get(
-    Uri.parse('https://developerxpb.com.br/api/personal/$id'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token', // Caso precise de autenticação
-    },
-  );
+  //     // Verificar se o campo 'data' é null e retornar uma lista vazia caso seja
+  //     if (data['data'] == null) {
+  //       print('Nenhuma rotina de treino encontrada.');
+  //       return []; // Retorna uma lista vazia
+  //     } else {
+  //       return data['data']; // Retorna as rotinas se houver dados
+  //     }
+  //   } else {
+  //     print('Erro ao carregar rotinas: ${response.statusCode}');
+  //     throw Exception('Erro ao carregar rotinas de treino');
+  //   }
+  // }
 
-  if (response.statusCode == 200) {
-    final personalData = jsonDecode(response.body);
-    print(
-        'Dados recebidos para o ID $id: $personalData'); // Log dos dados recebidos
-    return personalData;
-  } else {
-    print(
-        'Erro ao buscar personal com ID $id, Status code: ${response.statusCode}');
-    throw Exception('Falha ao buscar personal com id $id');
-  }
-}
+  Future<List<int>> fetchRotinasAluno(String alunoId) async {
+    final token = await getToken(); // Pega o token de autenticação
 
-// Função para buscar múltiplos personals
-Future<List<Map<String, dynamic>>> _fetchRandomPersonals() async {
-  List<int> randomIds = _generateRandomIds(5, 564); // Gera 5 IDs aleatórios
-  List<Map<String, dynamic>> personals = [];
+    final response = await http.get(
+      Uri.parse('https://developerxpb.com.br/api/alunos-has-rotinas'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
 
-  for (int id in randomIds) {
-    try {
-      Map<String, dynamic> personal = await _fetchPersonalById(id);
-      personals.add(personal);
-    } catch (e) {
-      print('Erro ao buscar personal com id $id: $e');
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      // Verifica se há dados e filtra as rotinas associadas ao aluno
+      if (data['data'] != null) {
+        // Filtra apenas as rotinas associadas ao aluno com ID especificado
+        final rotinasAluno = data['data']
+            .where(
+                (rotina) => rotina['aluno_id'].toString() == alunoId.toString())
+            .toList();
+
+        // Pega os IDs das rotinas filtradas
+        final rotinaIds = rotinasAluno
+            .map<int>((rotina) => rotina['rotina-de-treino_id'] as int)
+            .toList();
+
+        print('Rotinas associadas ao aluno $alunoId: $rotinaIds');
+        return rotinaIds;
+      } else {
+        print('Nenhuma rotina encontrada para o aluno $alunoId');
+        return [];
+      }
+    } else {
+      print('Erro ao carregar rotinas: ${response.statusCode}');
+      throw Exception('Erro ao carregar rotinas de treino');
     }
   }
+
+  // // *** Aqui está a função para vincular aluno à rotina ***
+  // Future<void> vincularAlunoComRotina(int alunoId, int rotinaDeTreinoId) async {
+  //   final token = await getToken(); // Pega o token do storage
+  //   final response = await http.post(
+  //     Uri.parse('https://developerxpb.com.br/api/alunos-has-rotinas'),
+  //     headers: {
+  //       'Authorization': 'Bearer $token',
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: jsonEncode({
+  //       'aluno_id': alunoId.toString(),
+  //       'rotina-de-treino_id': rotinaDeTreinoId.toString(),
+  //     }),
+  //   );
+
+  //   if (response.statusCode == 201) {
+  //     print('Aluno vinculado à rotina com sucesso');
+  //   } else {
+  //     print('Erro ao vincular aluno à rotina: ${response.body}');
+  //     throw Exception('Falha ao vincular o aluno à rotina');
+  //   }
+  // }
+
+  void _associateRoutineToStudent(int rotinaDeTreinoId) {
+  final associacaoData = {
+    "aluno_id": widget.alunoData['id'].toString(),  // Certifica-se de que o ID é uma String
+    "rotina-de-treino_id": rotinaDeTreinoId.toString(),  // Certifica-se de que o ID é uma String
+  };
 
   print(
-      'Lista final de personals: $personals'); // Log da lista final de personals
-  return personals;
+      'Associando rotina de treino ID: $rotinaDeTreinoId com aluno ID: ${widget.alunoData['id']}');
+
+  if (mounted) {
+    context
+        .read<AlunoHasRotinaBloc>()
+        .add(CreateAlunoHasRotina(associacaoData));
+  }
 }
 
-class TopPersonalsSection extends StatefulWidget {
-  @override
-  _TopPersonalsSectionState createState() => _TopPersonalsSectionState();
-}
-
-class _TopPersonalsSectionState extends State<TopPersonalsSection> {
-  List<Map<String, dynamic>> _personals = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadPersonals();
-  }
-
-  Future<void> _loadPersonals() async {
-    try {
-      print('Carregando personals aleatórios...'); // Log do início da operação
-      List<Map<String, dynamic>> personals = await _fetchRandomPersonals();
-      setState(() {
-        _personals = personals;
-        _isLoading = false;
-      });
-      print('Personals carregados com sucesso.'); // Log de sucesso
-    } catch (e) {
-      print('Erro ao carregar personals: $e');
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Top Personals",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              "Ver todos",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.orange,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 100,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: _personals.length,
-            itemBuilder: (context, index) {
-              final personal = _personals[index];
-              return _buildPersonalAvatar(personal);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPersonalAvatar(Map<String, dynamic> personal) {
-    // Acessa os dados dentro da chave 'data'
-    final data = personal['data'];
-
-    // URL de uma imagem de avatar genérica
-    const placeholderAvatarUrl = 'https://via.placeholder.com/150';
-
-    return Padding(
-      padding: const EdgeInsets.only(right: 0),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 35, // Tamanho do avatar
-            backgroundImage: data['foto'] != null && data['foto'].isNotEmpty
-                ? NetworkImage(data['foto'])
-                : NetworkImage(
-                    placeholderAvatarUrl), // Usa a URL da imagem genérica
-          ),
-          const SizedBox(height: 8),
-          // Aqui acessamos o nome corretamente dentro de 'data'
-          Text(
-            data['nome'] != null && data['nome'].isNotEmpty
-                ? data['nome'] // Garante que o nome será exibido corretamente
-                : 'Nome desconhecido', // Exibe mensagem padrão se o nome for nulo ou vazio
-            style: TextStyle(fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
 }

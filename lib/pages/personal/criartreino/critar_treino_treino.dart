@@ -17,10 +17,9 @@ class CriarTreino extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+        backgroundColor: Colors.white,
         appBar: CustomAppBar(
           title: 'Criar Treino',
-
         ),
         body: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -57,6 +56,7 @@ class CriarTreino extends StatelessWidget {
                       context
                           .read<TreinoBloc>()
                           .add(CreateTreino(treinoData, rotinaId.toString()));
+
                       Navigator.of(context).pop();
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(

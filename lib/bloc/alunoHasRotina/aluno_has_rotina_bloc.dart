@@ -3,7 +3,6 @@ import 'package:sprylife/bloc/alunoHasRotina/aluno_has_rotina_event.dart';
 import 'package:sprylife/bloc/alunoHasRotina/aluno_has_rotina_state.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import 'package:sprylife/utils/token_storege.dart';
 
 class AlunoHasRotinaBloc
@@ -22,15 +21,13 @@ class AlunoHasRotinaBloc
       final token = await getToken(); // Obtém o token JWT
       final response = await http.get(
         Uri.parse(
-            'https://developerxpb.com.br/api/aluno-has-rotinas/${event.alunoId}'),
+            'https://developerxpb.com.br/api/alunos-has-rotinas/${event.alunoId}'),
         headers: {
           'Authorization': 'Bearer $token', // Corrige o formato do token
           'Content-Type': 'application/json',
         },
       );
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      print('Aluno ID: ${event.alunoId}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -44,7 +41,6 @@ class AlunoHasRotinaBloc
     }
   }
 
-
   Future<void> _onCreateAlunoHasRotina(
     CreateAlunoHasRotina event,
     Emitter<AlunoHasRotinaState> emit,
@@ -52,8 +48,11 @@ class AlunoHasRotinaBloc
     emit(AlunoHasRotinaLoading());
     try {
       final token = await getToken(); // Obtém o token JWT
+      print(
+          'Tentando associar rotina ${event.associacaoData['rotina-de-treino_id']} ao aluno ${event.associacaoData['aluno_id']}');
+
       final response = await http.post(
-        Uri.parse('https://endereco_api/api/aluno-has-rotinas'),
+        Uri.parse('https://developerxpb.com.br/api/alunos-has-rotinas'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -61,17 +60,19 @@ class AlunoHasRotinaBloc
         body: jsonEncode(event.associacaoData),
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
-      if (response.statusCode == 201) {
+      // Verifique o código de status correto para identificar sucesso ou erro
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        print('Associação da rotina ao aluno realizada com sucesso!');
         emit(AlunoHasRotinaSuccess('Associação criada com sucesso!'));
       } else {
-        emit(AlunoHasRotinaFailure('Erro ao criar associação: ${response.statusCode}'));
+        // Tratar outras respostas com status diferente de 201 ou 200 como erro
+        print('Erro ao criar associação: ${response.body}');
+        emit(AlunoHasRotinaFailure(
+            'Erro ao criar associação: ${response.body}'));
       }
     } catch (e) {
+      print('Erro ao criar associação: $e');
       emit(AlunoHasRotinaFailure('Erro ao criar associação: $e'));
     }
   }
 }
-
