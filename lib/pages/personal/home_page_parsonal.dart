@@ -7,6 +7,7 @@ import 'package:sprylife/pages/personal/aluno_treino_screen.dart';
 import 'package:sprylife/pages/personal/alunoperfil/aluno_perfil_personal.dart';
 import 'package:sprylife/pages/personal/cadastro_aluno_personal.dart';
 import 'package:sprylife/pages/personal/chatpage/chat_screen_personal.dart';
+import 'package:sprylife/pages/personal/curriculoPersonal/curriculo_personal_page.dart';
 import 'package:sprylife/pages/personal/faturasAndPlanos/faturas_srcreen.dart';
 import 'package:sprylife/pages/personal/notificações/notificacoes.dart';
 import 'package:sprylife/pages/personal/pesquisarAluno/pesquisa_aluno_page.dart';
@@ -169,7 +170,7 @@ class _HomePersonalScreenState extends State<HomePersonalScreen> {
           'Feedback',
           Icons.feedback,
           () {
-            // Lógica para feedback
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) => CurriculoPersonalPage(personalData: widget.personalData,)));
           },
         ),
         _buildActionButton(

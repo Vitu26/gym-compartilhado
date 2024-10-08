@@ -65,7 +65,6 @@ class _EditTurmaPageState extends State<EditTurmaPage> {
                         } else {
                           selectedAlunos.remove(aluno);
                         }
-                        ;
                       });
                     },
                   );
@@ -91,8 +90,10 @@ class _EditTurmaPageState extends State<EditTurmaPage> {
                     // Mostrar mensagem de erro
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content: Text(
-                              'Por favor, selecione um personal e pelo menos um aluno.')),
+                        content: Text(
+                          'Por favor, selecione um personal e pelo menos um aluno.',
+                        ),
+                      ),
                     );
                   }
                 },
@@ -105,33 +106,52 @@ class _EditTurmaPageState extends State<EditTurmaPage> {
     );
   }
 
+  // Função para obter a lista de Dropdown de Personais
   List<DropdownMenuItem<Personal>> _getPersonalDropdownItems() {
     List<Personal> personals = [
       Personal(
         id: 1, // ID do Personal A
         nome: 'Personal A',
         email: 'a@example.com',
-        cpf: '123',
-        foto:
-            '', // Se não tiver uma foto, pode deixar como string vazia ou null
-        sobre: 'Descrição do Personal A', // Insira a descrição apropriada
-        confef: '123',
-        cref: '123',
+        cpf: '123456789',
+        foto: null, // Campo opcional
+        sobre: 'Descrição do Personal A',
+        confef: '123456',
+        cref: '123456',
         especialidade: 'Musculação',
-        address:
-            null, // Caso não tenha endereço, você pode deixar como null ou fornecer um objeto Address
+        tipoAtendimento: 'Online',
+        genero: 'Masculino',
+        experimentalGratuita: '1',
+        endereco: Address(
+          estado: 'PB',
+          cidade: 'João Pessoa',
+          bairro: 'Mangabeira',
+          rua: 'Rua X',
+          numero: '100',
+          complemento: null,
+        ),
       ),
       Personal(
         id: 2, // ID do Personal B
         nome: 'Personal B',
         email: 'b@example.com',
-        cpf: '456',
-        foto: '',
+        cpf: '987654321',
+        foto: null,
         sobre: 'Descrição do Personal B',
-        confef: '456',
-        cref: '456',
-        especialidade: 'Musculação',
-        address: null,
+        confef: '654321',
+        cref: '654321',
+        especialidade: 'Treinamento Funcional',
+        tipoAtendimento: 'Presencial',
+        genero: 'Feminino',
+        experimentalGratuita: null,
+        endereco: Address(
+          estado: 'SP',
+          cidade: 'São Paulo',
+          bairro: 'Centro',
+          rua: 'Avenida Y',
+          numero: 200,
+          complemento: 'Apto 15',
+        ),
       ),
     ];
 
@@ -143,30 +163,34 @@ class _EditTurmaPageState extends State<EditTurmaPage> {
     }).toList();
   }
 
+  // Função para obter a lista de Alunos
   List<Aluno> _getAlunos() {
     return [
       Aluno(
-          nome: 'Aluno 1',
-          email: 'aluno1@example.com',
-          cpf: '111',
-          foto: '',
-          sexo: 'masculino',
-          dataDeNascimento: DateTime.now(),
-          objetivoId: 1,
-          nivelAtividadeId: 1,
-          modalidadeAlunoId: 1,
-          telefone: '123456789'),
+        nome: 'Aluno 1',
+        email: 'aluno1@example.com',
+        cpf: '11111111111',
+        foto: null ?? '',
+        sexo: 'Masculino',
+        dataDeNascimento: DateTime(1995, 5, 20),
+        objetivoId: 1,
+        nivelAtividadeId: 1,
+        modalidadeAlunoId: 1,
+        telefone: '123456789',
+      ),
       Aluno(
-          nome: 'Aluno 2',
-          email: 'aluno2@example.com',
-          cpf: '222',
-          foto: '',
-          sexo: 'feminino',
-          dataDeNascimento: DateTime.now(),
-          objetivoId: 1,
-          nivelAtividadeId: 1,
-          modalidadeAlunoId: 1,
-          telefone: '987654321'),
+
+        nome: 'Aluno 2',
+        email: 'aluno2@example.com',
+        cpf: '22222222222',
+        foto: null ?? '',
+        sexo: 'Feminino',
+        dataDeNascimento: DateTime(1998, 8, 10),
+        objetivoId: 1,
+        nivelAtividadeId: 1,
+        modalidadeAlunoId: 1,
+        telefone: '987654321',
+      ),
     ];
   }
 }
