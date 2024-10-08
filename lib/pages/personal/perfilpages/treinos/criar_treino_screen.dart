@@ -17,10 +17,9 @@ class CriarTreinoRotina extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+        backgroundColor: Colors.white,
         appBar: CustomAppBar(
           title: 'Criar Treino',
-
         ),
         body: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -54,9 +53,8 @@ class CriarTreinoRotina extends StatelessWidget {
                       };
 
                       // Pass both treinoData and rotinaId to CreateTreino event
-                      context
-                          .read<TreinoBloc>()
-                          .add(CreateTreino(treinoData, rotinaId.toString()));
+                      context.read<TreinoBloc>().add(CreateTreino(
+                          treinoData: treinoData, rotinaDeTreinoId: rotinaId));
                       Navigator.of(context).pop();
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(

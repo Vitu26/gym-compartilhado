@@ -64,11 +64,10 @@ class AlunoPerfilScreen extends StatelessWidget {
 
   Widget _buildHeader() {
     // Verificação de valores nulos com fallback para valores padrão
-    final String nome =
-        alunoData?['user']?['name']?.replaceAll(' ', '').toLowerCase() ??
-            'default_image';
-    final String nomeExibicao =
+    final String nomeCompleto =
         alunoData?['user']?['name'] ?? 'Nome Indisponível';
+    final String primeiroNome =
+        nomeCompleto.split(' ').first; // Obter apenas o primeiro nome
     final String status =
         alunoData?['status']?.toString() ?? 'Status Indisponível';
     final String cidade = alunoData?['address']?['cidade']?.toString() ??
@@ -78,22 +77,18 @@ class AlunoPerfilScreen extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 40,
-          backgroundImage: AssetImage('images/$nome.jpg'),
+          backgroundImage:
+              AssetImage('images/${primeiroNome.toLowerCase()}.jpg'),
         ),
         SizedBox(width: 16),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Nome do aluno com truncamento para não quebrar a tela
-            Container(
-              width: 200, // Defina a largura máxima para o nome
-              child: Text(
-                nomeExibicao,
-                maxLines: 1, // Limitar a apenas uma linha
-                overflow: TextOverflow
-                    .ellipsis, // Adicionar reticências se o texto for muito longo
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
+            Text(
+              primeiroNome, // Exibir apenas o primeiro nome
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             Text(
               status,

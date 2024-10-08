@@ -64,72 +64,75 @@ class _HomePersonalScreenState extends State<HomePersonalScreen> {
 
   // Construir saudação na tela, incluindo o nome do personal
   Widget _buildGreeting(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Bom dia,',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              '${widget.personalData['nome']}', // Nome do personal vindo de 'personalData'
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 5),
-            const Text(
-              'Seu perfil recebeu XX visitas\n nos últimos XX dias',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-          ],
-        ),
-        Stack(
-          children: [
-            IconButton(
-              onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => NotificationScreen(
-                    notifications: widget.notifications
-                        .map((notification) => notification.map(
-                            (key, value) => MapEntry(key, value.toString())))
-                        .toList(),
-                  ),
-                ));
-              },
-              icon: const Icon(Icons.notifications),
-            ),
-            if (widget.notifications
-                .where((notification) => notification['status'] == 'new')
-                .isNotEmpty)
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    widget.notifications
-                        .where((notification) => notification['status'] == 'new')
-                        .length
-                        .toString(),
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                  ),
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Bom dia,',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-          ],
-        ),
-      ],
+              Text(
+                '${widget.personalData['nome']}', // Nome do personal vindo de 'personalData'
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 5),
+              const Text(
+                'Seu perfil recebeu XX visitas\n nos últimos XX dias',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+            ],
+          ),
+          Stack(
+            children: [
+              IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => NotificationScreen(
+                      notifications: widget.notifications
+                          .map((notification) => notification.map(
+                              (key, value) => MapEntry(key, value.toString())))
+                          .toList(),
+                    ),
+                  ));
+                },
+                icon: const Icon(Icons.notifications),
+              ),
+              if (widget.notifications
+                  .where((notification) => notification['status'] == 'new')
+                  .isNotEmpty)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      widget.notifications
+                          .where((notification) => notification['status'] == 'new')
+                          .length
+                          .toString(),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

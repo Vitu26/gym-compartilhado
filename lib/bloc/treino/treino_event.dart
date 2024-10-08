@@ -12,14 +12,18 @@ class GetAllTreinos extends TreinoEvent {}
 
 // Evento para criar um novo treino
 class CreateTreino extends TreinoEvent {
-  final Map<String, dynamic> treinoData;
-  final String rotinaDeTreinoId; // Inclua o ID da rotina
+  final Map<String, dynamic> treinoData; // Dados do treino
+  final int rotinaDeTreinoId; // ID da rotina à qual o treino será associado
 
-  const CreateTreino(this.treinoData, this.rotinaDeTreinoId);
+  CreateTreino({
+    required this.treinoData,
+    required this.rotinaDeTreinoId,
+  });
 
   @override
-  List<Object?> get props => [treinoData, rotinaDeTreinoId];
+  List<Object> get props => [treinoData, rotinaDeTreinoId];
 }
+
 
 
 

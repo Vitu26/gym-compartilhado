@@ -162,9 +162,11 @@ class TreinoBloc extends Bloc<TreinoEvent, TreinoState> {
       CreateTreino event, Emitter<TreinoState> emit) async {
     emit(TreinoLoading());
     try {
-      final token = await getToken();
-      final treinoDataJson = jsonEncode(event.treinoData);
+      final token = await getToken(); // Obtém o token de autorização
+      print('Token obtido: $token'); // Log do token
 
+      // Envia os dados do treino para criação
+      final treinoDataJson = jsonEncode(event.treinoData);
       final response = await http.post(
         Uri.parse('https://developerxpb.com.br/api/treino'),
         headers: {
@@ -175,11 +177,38 @@ class TreinoBloc extends Bloc<TreinoEvent, TreinoState> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        // Sucesso na criação do treino, vamos associar à rotina
         final treinoData = jsonDecode(response.body)['data'];
-        final treinoId = treinoData['id']; // Pega o ID do treino criado
-
-        emit(TreinoSuccess('Treino criado com sucesso', treinoId: treinoId));
+        final treinoId = treinoData['id']; // ID do treino criado
         print('Treino criado com sucesso. Treino ID: $treinoId');
+
+        // Criar a associação entre o treino e a rotina
+        final rotinaHasTreinoData = {
+          'rotina-de-treino_id': event.rotinaDeTreinoId,
+          'treino_id': treinoId
+        };
+
+        // Faz a requisição para associar o treino à rotina
+        final associarResponse = await http.post(
+          Uri.parse('https://developerxpb.com.br/api/rotina-has-treinos'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode(rotinaHasTreinoData),
+        );
+
+        if (associarResponse.statusCode == 200 ||
+            associarResponse.statusCode == 201) {
+          // Sucesso na associação
+          emit(TreinoSuccess('Treino criado e associado à rotina com sucesso'));
+          print('Associação entre treino e rotina criada com sucesso');
+        } else {
+          emit(TreinoFailure(
+              'Erro ao associar treino à rotina. Status: ${associarResponse.statusCode}'));
+          print(
+              'Erro ao associar treino à rotina. Status: ${associarResponse.statusCode}');
+        }
       } else {
         emit(TreinoFailure(
             'Falha ao criar treino. Status: ${response.statusCode}'));
