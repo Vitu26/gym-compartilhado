@@ -26,6 +26,7 @@ import 'package:sprylife/pages/cadastro/cadastro_professor/cadstro_professor.dar
 import 'package:sprylife/pages/home_page.dart';
 import 'package:sprylife/pages/login/login.dart';
 import 'package:sprylife/pages/personal/alunoperfil/aluno_perfil_personal.dart';
+import 'package:sprylife/pages/personal/avaliacao/avaliacao_page.dart';
 import 'package:sprylife/pages/personal/cadastro_aluno_personal.dart';
 import 'package:sprylife/pages/personal/home_page_parsonal.dart';
 import 'package:sprylife/pages/personal/perfilpages/treinos/treinos_detalhe_page.dart';
@@ -119,6 +120,10 @@ class MyApp extends StatelessWidget {
         title: 'Academia App',
         initialRoute: AppRoutes.login,
         routes: {
+          AppRoutes.avaliacaoPage: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      return AvaliacaoPage(personalData: args['personalData']);
+    },
           AppRoutes.login: (context) => LoginScreen(),
           AppRoutes.pesquisarPersonal: (context) => PesquisarPersonal(),
           AppRoutes.pesquisarPersonalLista: (context) =>

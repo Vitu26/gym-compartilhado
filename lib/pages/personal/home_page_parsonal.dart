@@ -3,8 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sprylife/bloc/aluno/aluno_bloc.dart';
 import 'package:sprylife/bloc/aluno/aluno_evet.dart';
 import 'package:sprylife/bloc/aluno/aluno_state.dart';
-import 'package:sprylife/pages/personal/aluno_treino_screen.dart';
+import 'package:sprylife/models/rotas.dart';
 import 'package:sprylife/pages/personal/alunoperfil/aluno_perfil_personal.dart';
+import 'package:sprylife/pages/personal/avaliacao/avaliacao_page.dart';
 import 'package:sprylife/pages/personal/cadastro_aluno_personal.dart';
 import 'package:sprylife/pages/personal/chatpage/chat_screen_personal.dart';
 import 'package:sprylife/pages/personal/curriculoPersonal/curriculo_personal_page.dart';
@@ -123,7 +124,8 @@ class _HomePersonalScreenState extends State<HomePersonalScreen> {
                     ),
                     child: Text(
                       widget.notifications
-                          .where((notification) => notification['status'] == 'new')
+                          .where(
+                              (notification) => notification['status'] == 'new')
                           .length
                           .toString(),
                       style: const TextStyle(color: Colors.white, fontSize: 12),
@@ -159,7 +161,8 @@ class _HomePersonalScreenState extends State<HomePersonalScreen> {
                 MaterialPageRoute(
                   builder: (context) => AlunoFaturaScreen(
                     alunoData: widget.alunoData!,
-                    personalData: widget.personalData, // Passe personalData aqui
+                    personalData:
+                        widget.personalData, // Passe personalData aqui
                   ),
                 ),
               );
@@ -167,27 +170,30 @@ class _HomePersonalScreenState extends State<HomePersonalScreen> {
           },
         ),
         _buildActionButton(
-          'Feedback',
+          'Currículo',
           Icons.feedback,
           () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) => CurriculoPersonalPage(personalData: widget.personalData,)));
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => CurriculoPersonalPage(
+                      personalData: widget.personalData,
+                    )));
           },
         ),
         _buildActionButton(
-          'Treinos',
+          'Feedback',
           Icons.fitness_center,
           () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => AlunoTreinosScreen(
-                  alunoData: widget.personalData, // Passa os dados do personal
-                  treinos: [
-                    {'nome': 'Treino A', 'descricao': 'Treino de força'},
-                    {'nome': 'Treino B', 'descricao': 'Treino de resistência'},
-                  ],
-                ),
-              ),
-            );
+             Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => AvaliacaoPage(
+                      personalData: widget.personalData,
+                    )));
+            // Navigator.pushNamed(
+            //   context,
+            //   AppRoutes.avaliacaoPage,
+            //   arguments: {
+            //     'personalData': widget.personalData,
+            //   },
+            // );
           },
         ),
       ],
@@ -361,8 +367,8 @@ class _HomePersonalScreenState extends State<HomePersonalScreen> {
                         builder: (context) {
                           return AlunoPerfilScreen(
                             alunoData: student,
-                            personalData:
-                                widget.personalData, // Passe o personalData aqui
+                            personalData: widget
+                                .personalData, // Passe o personalData aqui
                           );
                         },
                       ),

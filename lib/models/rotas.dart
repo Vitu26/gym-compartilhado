@@ -17,4 +17,6 @@ class AppRoutes {
   static const String treinoDetalhes = '/treinoDetalhes';
   static const String pesquisarPersonal = '/pesquisarPersonal';
   static const String pesquisarPersonalLista = '/pesquisarPersonalLista';
+
+  static const String avaliacaoPage = '/avaliacaoPage';
 }

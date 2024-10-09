@@ -73,6 +73,9 @@ class Personal {
   final String confef;
   final String cref;
   final String especialidadeDoPersonal;
+  final int seguidores;
+  final List<Treino> treinos;
+  final List<Comentario> comentarios;
 
   Personal({
     required this.id,
@@ -88,23 +91,42 @@ class Personal {
     required this.confef,
     required this.cref,
     required this.especialidadeDoPersonal,
+    required this.seguidores,
+    required this.treinos,
+    required this.comentarios,
   });
 
   factory Personal.fromJson(Map<String, dynamic> json) {
     return Personal(
-      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      id: json['id'] is int
+          ? json['id']
+          : int.tryParse(json['id'].toString()) ?? 0,
       nome: json['nome'] ?? '',
       email: json['email'] ?? '',
       password: json['password'] as String?,
-      cpf: json['cpf']?.toString() ?? '', // Certifique-se de que `cpf` seja tratado como String
-      foto: json['foto'] as String?, // Pode ser null
-      genero: json['genero'] as String?, // Pode ser null
+      cpf: json['cpf']?.toString() ?? '',
+      foto: json['foto'] as String?,
+      genero: json['genero'] as String?,
       tipoAtendimento: json['tipo_atendimento'] ?? '',
-      experimentalGratuita: json['experimental_gratuita']?.toString(), // Tratar como String ou null
+      experimentalGratuita: json['experimental_gratuita']?.toString(),
       endereco: Address.fromJson(json['endereco'] ?? {}),
-      confef: json['confef']?.toString() ?? '', // Certifique-se de que `confef` seja tratado como String
-      cref: json['cref']?.toString() ?? '', // Certifique-se de que `cref` seja tratado como String
-      especialidadeDoPersonal: json['especialidade-do-personal']?.toString() ?? '',
+      confef: json['confef']?.toString() ?? '',
+      cref: json['cref']?.toString() ?? '',
+      especialidadeDoPersonal:
+          json['especialidade-do-personal']?.toString() ?? '',
+      seguidores: json['seguidores'] ?? 0,
+
+      // Verifique se 'treinos' existe e não é null, se for null, defina uma lista vazia
+      treinos: json['treinos'] != null
+          ? (json['treinos'] as List).map((t) => Treino.fromJson(t)).toList()
+          : [],
+
+      // Verifique se 'comentarios' existe e não é null, se for null, defina uma lista vazia
+      comentarios: json['comentarios'] != null
+          ? (json['comentarios'] as List)
+              .map((c) => Comentario.fromJson(c))
+              .toList()
+          : [],
     );
   }
 
@@ -123,11 +145,68 @@ class Personal {
       'confef': confef,
       'cref': cref,
       'especialidade-do-personal': especialidadeDoPersonal,
+      'seguidores': seguidores,
+      'treinos': treinos.map((t) => t.toJson()).toList(),
+      'comentarios': comentarios.map((c) => c.toJson()).toList(),
     };
   }
 }
 
+class Treino {
+  final String titulo;
+  final String duracao;
+  final String nivel;
 
+  Treino({
+    required this.titulo,
+    required this.duracao,
+    required this.nivel,
+  });
+
+  factory Treino.fromJson(Map<String, dynamic> json) {
+    return Treino(
+      titulo: json['titulo'] ?? '',
+      duracao: json['duracao'] ?? '',
+      nivel: json['nivel'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'titulo': titulo,
+      'duracao': duracao,
+      'nivel': nivel,
+    };
+  }
+}
+
+class Comentario {
+  final String autor;
+  final String comentario;
+  final double nota;
+
+  Comentario({
+    required this.autor,
+    required this.comentario,
+    required this.nota,
+  });
+
+  factory Comentario.fromJson(Map<String, dynamic> json) {
+    return Comentario(
+      autor: json['autor'] ?? '',
+      comentario: json['comentario'] ?? '',
+      nota: double.parse(json['nota'].toString()),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'autor': autor,
+      'comentario': comentario,
+      'nota': nota,
+    };
+  }
+}
 
 class Address {
   final String estado;
@@ -153,7 +232,8 @@ class Address {
       bairro: json['bairro'] ?? '', // Tratar como String, mesmo se for null
       rua: json['rua'] ?? '', // Tratar como String, mesmo se for null
       complemento: json['complemento'] as String?, // Opcional, pode ser null
-      numero: json['numero']?.toString() ?? '', // Garantir que seja tratado como String
+      numero: json['numero']?.toString() ??
+          '', // Garantir que seja tratado como String
     );
   }
 
@@ -168,7 +248,6 @@ class Address {
     };
   }
 }
-
 
 class Turma {
   final int id;

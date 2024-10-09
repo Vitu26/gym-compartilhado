@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:brasil_fields/brasil_fields.dart';
 import 'package:sprylife/pages/cadastro/cadastro_aluno/gender_page.dart';
 import 'package:sprylife/pages/cadastro/cadastro_professor/perfil_page_perfonal.dart';
 import 'package:sprylife/utils/colors.dart';
@@ -51,13 +53,26 @@ class _CadastroScreenState extends State<CadastroScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
-            Text('E-mail'),
+            const Text('E-mail'),
             TextFieldLogin(controller: emailController, obscureText: false),
             const SizedBox(height: 16),
-            Text('Telefone'),
-            TextFieldLogin(controller: phoneController, obscureText: false),
+            const Text('Telefone'),
+            TextField(
+              controller: phoneController,
+              keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                TelefoneInputFormatter(),  // Formatação do número de telefone brasileiro
+              ],
+              decoration: InputDecoration(
+                hintText: '(00) 00000-0000',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
-            Text('Senha'),
+            const Text('Senha'),
             TextFieldLogin(controller: passwordController, obscureText: true),
             const SizedBox(height: 24),
             Row(
@@ -118,8 +133,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
                         builder: (context) => CadastroGeneroObjNivel(
                           email: emailController.text,
                           phone: phoneController.text,
-                          password: passwordController
-                              .text, // Nível de atividade também
+                          password: passwordController.text,
                         ),
                       ));
                     }
