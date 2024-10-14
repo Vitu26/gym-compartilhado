@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:sprylife/bloc/chat/chat_bloc.dart';
 import 'package:sprylife/bloc/chat/chat_event.dart';
 import 'package:sprylife/bloc/chat/chat_state.dart';
+import 'package:sprylife/components/colors.dart';
 import 'package:sprylife/widgets/custom_appbar.dart';
 import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
@@ -124,7 +125,7 @@ class _ChatScreenPersonalState extends State<ChatScreenPersonal> {
                                 vertical: 10.0, horizontal: 14.0),
                             decoration: BoxDecoration(
                               color: isSender
-                                  ? Colors.blueAccent
+                                  ? personalColor
                                   : Colors.grey[300],
                               borderRadius: BorderRadius.circular(20),
                             ),

@@ -280,6 +280,106 @@ class Turma {
   }
 }
 
+class AgendaModel {
+  final int id;
+  final DateTime data;
+  final String nomeEvento;
+  final String horarioInicio;
+  final String horarioFim;
+  final String rua;
+  final String bairro;
+  final String descricao;
+  final int personalId;
+
+  AgendaModel({
+    required this.id,
+    required this.data,
+    required this.nomeEvento,
+    required this.horarioInicio,
+    required this.horarioFim,
+    required this.rua,
+    required this.bairro,
+    required this.descricao,
+    required this.personalId,
+  });
+
+  // Factory para criar um objeto AgendaModel a partir de um JSON
+  factory AgendaModel.fromJson(Map<String, dynamic> json) {
+    return AgendaModel(
+      id: json['id'],
+      data: DateTime.parse(json['data']),
+      nomeEvento: json['nome-do-evento'],
+      horarioInicio: json['horario-inicio'],
+      horarioFim: json['horario-fim'],
+      rua: json['rua'],
+      bairro: json['bairro'],
+      descricao: json['descricao'],
+      personalId: json['personal_id'],
+    );
+  }
+
+  // Método para converter um objeto AgendaModel para JSON (para enviar via API)
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'data': data.toIso8601String(),
+      'nome-do-evento': nomeEvento,
+      'horario-inicio': horarioInicio,
+      'horario-fim': horarioFim,
+      'rua': rua,
+      'bairro': bairro,
+      'descricao': descricao,
+      'personal_id': personalId,
+    };
+  }
+}
+
+class Agendamento {
+  final int id;
+  final String nome;
+  final String horarioInicio;
+  final String horarioFim;
+  final String rua;
+  final String bairro;
+  final String descricao;
+
+  Agendamento({
+    required this.id,
+    required this.nome,
+    required this.horarioInicio,
+    required this.horarioFim,
+    required this.rua,
+    required this.bairro,
+    required this.descricao,
+  });
+
+  factory Agendamento.fromJson(Map<String, dynamic> json) {
+    return Agendamento(
+      id: json['id'],
+      nome: json['nome-do-evento'],
+      horarioInicio: json['horario-inicio'],
+      horarioFim: json['horario-fim'],
+      rua: json['rua'],
+      bairro: json['bairro'],
+      descricao: json['descricao'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'nome-do-evento': nome,
+      'horario-inicio': horarioInicio,
+      'horario-fim': horarioFim,
+      'rua': rua,
+      'bairro': bairro,
+      'descricao': descricao,
+    };
+  }
+}
+
+
+
 
 
 // class Personal {

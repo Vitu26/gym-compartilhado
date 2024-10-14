@@ -53,7 +53,7 @@ class _HomePersonalScreenState extends State<HomePersonalScreen> {
             const SizedBox(height: 65),
             _buildGreeting(context),
             const SizedBox(height: 20),
-            CalendarWidget(),
+            CalendarWidget(personalData: widget.personalData,),
             const SizedBox(height: 20),
             _buildActionButtons(context),
             const SizedBox(height: 20),

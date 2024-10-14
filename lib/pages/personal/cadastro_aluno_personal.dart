@@ -76,6 +76,7 @@ class _CadastroAlunoPersonalScreenState
         body: BlocListener<InformacoesComunsBloc, InformacoesComunsState>(
           listener: (context, state) {
             if (state is InformacoesComunsCreated) {
+              print('Informações comuns criadas com sucesso: ${state.id}');
               final alunoData = {
                 'nome': nomeController.text,
                 'nome_social': nomeSocialController.text,
@@ -87,6 +88,7 @@ class _CadastroAlunoPersonalScreenState
               context.read<AlunoBloc>().add(AlunoCadastro(alunoData));
               _checkOrCreateAtivosGroup(context, state.id);
             } else if (state is InformacoesComunsError) {
+              print('Erro ao criar informações comuns: ${state.error}');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
@@ -98,6 +100,7 @@ class _CadastroAlunoPersonalScreenState
           },
           child: BlocBuilder<InformacoesComunsBloc, InformacoesComunsState>(
             builder: (context, state) {
+              print('Estado atual de InformacoesComunsBloc: $state');
               if (state is InformacoesComunsLoading) {
                 return Center(child: CircularProgressIndicator());
               }
@@ -280,13 +283,14 @@ class _CadastroAlunoPersonalScreenState
 
     // Monitora o estado do TurmaBloc para gerenciar as turmas
     context.read<TurmaBloc>().stream.listen((state) {
+      print('TurmaBloc State: $state');
       if (state is TurmaFound) {
         // Se a turma "Ativos" existe, adiciona o aluno nela
-        context
-            .read<TurmaBloc>()
-            .add(AddStudentToTurma(state.turma.id, alunoId));
+        print('Turma "Ativos" encontrada, adicionando aluno...');
+        context.read<TurmaBloc>().add(AddStudentToTurma(state.turma.id, alunoId));
       } else if (state is TurmaNotFound) {
         // Se a turma não existe, cria a turma
+        print('Turma "Ativos" não encontrada, criando...');
         final personalState = context.read<PersonalBloc>().state;
         if (personalState is PersonalSuccess) {
           final personalId = personalState.data['id'];
@@ -298,12 +302,37 @@ class _CadastroAlunoPersonalScreenState
         }
       } else if (state is TurmaCreated) {
         // Após a criação da turma, adiciona o aluno nela
-        context
-            .read<TurmaBloc>()
-            .add(AddStudentToTurma(state.turma.id, alunoId));
+        print('Turma "Ativos" criada, adicionando aluno...');
+        context.read<TurmaBloc>().add(AddStudentToTurma(state.turma.id, alunoId));
       }
     });
   }
 
   void _cadastrarAluno(BuildContext context) {
-    final informacoesComunsData
+    try {
+      final informacoesComunsData = {
+        'sexo': genero,
+        'data-de-nascimento': DateFormat('yyyy-MM-dd').format(
+          DateFormat('dd/MM/yyyy').parse(dataNascimentoController.text),
+        ),
+        'objetivo_id': objetivoId,
+        'nivel-atividade_id': nivelAtividadeId,
+        'modalidade-aluno_id': modalidadeAlunoId,
+        'table': 'alunos',
+        'reference_id': '',
+        'telefone': {
+          'numero': telefoneController.text.replaceAll(RegExp(r'\D'), ''),
+          'tipo': tipoTelefone ?? 'celular',
+        }
+      };
+
+      // Cria as informações comuns e dispara o evento de cadastro
+      print('Criando informações comuns: $informacoesComunsData');
+      context
+          .read<InformacoesComunsBloc>()
+          .add(CreateInformacoesComuns(informacoesComunsData));
+    } catch (e) {
+      print('Erro ao cadastrar aluno: $e');
+    }
+  }
+}

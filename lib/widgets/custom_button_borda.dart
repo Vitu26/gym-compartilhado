@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sprylife/components/colors.dart';
 
 class CustomButtonBorda extends StatelessWidget {
   final String text;
@@ -14,10 +15,10 @@ class CustomButtonBorda extends StatelessWidget {
     required this.text,
     required this.backgroundColor,
     required this.onPressed,
-    this.textStyle = const TextStyle(color: Colors.white, fontSize: 18),
+    this.textStyle = const TextStyle(color: personalColor, fontSize: 18),
     this.padding = const EdgeInsets.symmetric(vertical: 16),
-    this.borderColor = Colors.transparent, // Cor padrão sem borda
-    this.borderWidth = 2.0, // Largura padrão da borda
+    this.borderColor = personalColor,
+    this.borderWidth = 2.0,
   }) : super(key: key);
 
   @override

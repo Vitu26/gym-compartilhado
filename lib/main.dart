@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sprylife/bloc/agenda/agenda_bloc.dart';
 import 'package:sprylife/bloc/aluno/aluno_bloc.dart';
 import 'package:sprylife/bloc/alunoHasRotina/aluno_has_rotina_bloc.dart';
 import 'package:sprylife/bloc/categoriaExercicio/categoria_exercicio_bloc.dart';
@@ -113,6 +114,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<AlunoHasRotinaBloc>(
           create: (context) => AlunoHasRotinaBloc(),
+        ),
+        BlocProvider<AgendaBloc>(
+          create: (context) => AgendaBloc(),
         ),
       ],
       child: MaterialApp(
