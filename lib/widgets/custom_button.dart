@@ -6,6 +6,7 @@ class CustomButton extends StatelessWidget {
   final VoidCallback onPressed;
   final TextStyle textStyle;
   final EdgeInsetsGeometry padding;
+  final bool isThin;
 
   const CustomButton({
     Key? key,
@@ -14,6 +15,7 @@ class CustomButton extends StatelessWidget {
     required this.onPressed,
     this.textStyle = const TextStyle(color: Colors.white, fontSize: 18),
     this.padding = const EdgeInsets.symmetric(vertical: 16),
+    this.isThin = false,
   }) : super(key: key);
 
   @override
@@ -25,7 +27,9 @@ class CustomButton extends StatelessWidget {
         child: Text(text, style: textStyle),
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
-          padding: padding,
+          padding: isThin 
+              ? const EdgeInsets.symmetric(vertical: 8) // Altura menor quando fino
+              : padding,
         ),
       ),
     );

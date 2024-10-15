@@ -9,6 +9,7 @@ class CustomButtonBorda extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final Color borderColor;
   final double borderWidth;
+  final bool isThin; // Novo parâmetro para controlar o botão fino
 
   const CustomButtonBorda({
     Key? key,
@@ -19,6 +20,7 @@ class CustomButtonBorda extends StatelessWidget {
     this.padding = const EdgeInsets.symmetric(vertical: 16),
     this.borderColor = personalColor,
     this.borderWidth = 2.0,
+    this.isThin = false, // O padrão é não ser fino
   }) : super(key: key);
 
   @override
@@ -30,11 +32,14 @@ class CustomButtonBorda extends StatelessWidget {
         child: Text(text, style: textStyle),
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
-          padding: padding,
+          padding: isThin 
+              ? const EdgeInsets.symmetric(vertical: 8) // Altura menor quando fino
+              : padding,
           side: BorderSide(
             color: borderColor,
             width: borderWidth,
           ),
+          minimumSize: isThin ? Size(100, 40) : null, // Tamanho menor quando fino
         ),
       ),
     );

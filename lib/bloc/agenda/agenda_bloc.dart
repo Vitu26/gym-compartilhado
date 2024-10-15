@@ -76,17 +76,17 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
         Uri.parse(apiUrl),
         headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: jsonEncode(event.agendaData),
       );
 
-      // Aceitar tanto 200 quanto 201 como sucesso
       if (response.statusCode == 201 || response.statusCode == 200) {
         emit(AgendaSuccess('Agenda criada com sucesso!'));
-        add(GetAllAgendas()); // Atualiza as agendas após criação
+        final createdData = DateTime.parse(event.agendaData['data']);
+        add(GetAllAgendasForDay(
+            createdData)); // Atualiza as agendas para o dia da nova agenda
       } else {
-        // Exibir mensagem de erro detalhada com o conteúdo da resposta
         final errorMessage = jsonDecode(response.body);
         emit(AgendaError('Falha ao criar agenda: ${errorMessage['message']}'));
       }
@@ -124,18 +124,28 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
     emit(AgendaLoading());
     try {
       final token = await getToken();
+      print('Token: $token'); // Verificar se o token é válido
+      print('Excluindo evento com id: ${event.id}');
+
       final response = await http.delete(
         Uri.parse('$apiUrl/${event.id}'),
         headers: {'Authorization': 'Bearer $token'},
       );
+
+      print(
+          'Status Code: ${response.statusCode}'); // Verificar o código de resposta
+      print('Response Body: ${response.body}'); // Verificar o corpo da resposta
+
       if (response.statusCode == 200) {
         emit(AgendaSuccess('Agenda excluída com sucesso!'));
-        add(GetAllAgendas()); // Atualiza as agendas após exclusão
+        final today = DateTime.now();
+        add(GetAllAgendasForDay(
+            today)); // Atualiza a lista de agendas do dia atual
       } else {
-        emit(AgendaError('Falha ao excluir agenda'));
+        emit(AgendaError('Falha ao excluir agenda: ${response.body}'));
       }
     } catch (e) {
-      emit(AgendaError(e.toString()));
+      emit(AgendaError('Erro ao excluir agenda: $e'));
     }
   }
 }

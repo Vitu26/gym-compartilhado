@@ -57,7 +57,6 @@ class _AgendaPageState extends State<AgendaPage> {
                 if (state is AgendaLoading) {
                   return Center(child: CircularProgressIndicator());
                 } else if (state is AgendaLoaded) {
-                  // Constrói a lista de agendas com os eventos carregados
                   return _buildAgendaList(state.agendas.cast<AgendaModel>());
                 } else if (state is AgendaError) {
                   return Center(child: Text(state.error));
@@ -73,7 +72,30 @@ class _AgendaPageState extends State<AgendaPage> {
     );
   }
 
-  // Método para converter horário no formato 24 horas (HH:mm)
+  Future<DateTime?> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+    );
+    return picked;
+  }
+
+  Future<TimeOfDay?> _selectTime(BuildContext context, bool isStart) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      builder: (BuildContext context, Widget? child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
+    );
+    return picked;
+  }
+
   TimeOfDay parseTime(String time) {
     final format = DateFormat.Hm(); // Formato de 24 horas
     try {
@@ -85,110 +107,63 @@ class _AgendaPageState extends State<AgendaPage> {
     }
   }
 
-  // Lista de agendas
   Widget _buildAgendaList(List<AgendaModel> agendas) {
-    List<String> hours = List.generate(24, (index) {
-      return '${index.toString().padLeft(2, '0')}:00'; // Horas no formato 24 horas
-    });
-
-    // Mapeia os eventos para o horário correspondente
-    Map<String, List<AgendaModel>> eventsByHour = {};
-
-    for (var hour in hours) {
-      eventsByHour[hour] = [];
-    }
-
-    for (var agenda in agendas) {
-      // Converte o horário de 24 horas (HH:MM)
-      TimeOfDay startTime = parseTime(agenda.horarioInicio);
-      String startHour = startTime.format(context); // Formato 24 horas
-
-      if (eventsByHour.containsKey(startHour)) {
-        eventsByHour[startHour]!.add(agenda);
-      }
+    if (agendas.isEmpty) {
+      return Center(
+        child: Text(
+          'Nenhum evento disponível',
+          style: TextStyle(color: Colors.grey, fontSize: 16),
+        ),
+      );
     }
 
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: 16),
-      itemCount: hours.length,
+      itemCount: agendas.length,
       itemBuilder: (context, index) {
-        String currentHour = hours[index];
-        List<AgendaModel> eventsAtThisHour = eventsByHour[currentHour]!;
+        final agenda = agendas[index];
 
-        return Row(
-          children: [
-            Container(
-              width: 60,
-              alignment: Alignment.centerRight,
-              padding: EdgeInsets.only(right: 8),
-              child: Text(
-                currentHour,
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-            SizedBox(width: 8),
-            Expanded(
-              child: eventsAtThisHour.isNotEmpty
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: eventsAtThisHour.map((agenda) {
-                        TimeOfDay startTime = parseTime(agenda.horarioInicio);
-                        TimeOfDay endTime = parseTime(agenda.horarioFim);
-                        final duration = (endTime.hour + endTime.minute / 60) -
-                            (startTime.hour + startTime.minute / 60);
+        TimeOfDay startTime = parseTime(agenda.horarioInicio);
+        TimeOfDay endTime = parseTime(agenda.horarioFim);
 
-                        return Container(
-                          margin: EdgeInsets.symmetric(vertical: 4),
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade100,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          height: 60.0 * duration, // Define a altura do evento
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                agenda.nomeEvento,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Local: ${agenda.rua}, ${agenda.bairro}',
-                                style: TextStyle(fontSize: 14),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Status: ${agenda.descricao ?? 'Aguardando confirmação'}',
-                                style: TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    )
-                  : Container(
-                      height: 60, // Cada hora tem 60 de altura
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Colors.grey.shade300,
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                    ),
+        final duration = (endTime.hour + endTime.minute / 60) -
+            (startTime.hour + startTime.minute / 60);
+
+        final positiveDuration =
+            duration > 0 ? duration : 1; // Evitar valores negativos
+
+        return GestureDetector(
+          onTap: () => _showEventDetails(agenda),
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 4),
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade100,
+              borderRadius: BorderRadius.circular(8),
             ),
-          ],
+            height: 60.0 * positiveDuration,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  agenda.nomeEvento,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Horário: ${agenda.horarioInicio} às ${agenda.horarioFim}',
+                  style: TextStyle(fontSize: 10),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
   }
 
-  // Função para construir o calendário semanal na parte superior
   Widget _buildCalendar() {
-    DateTime now = DateTime.now(); // Data atual
+    DateTime now = DateTime.now();
     DateTime startOfWeek = widget.selectedDay
         .subtract(Duration(days: widget.selectedDay.weekday - 1));
 
@@ -208,11 +183,9 @@ class _AgendaPageState extends State<AgendaPage> {
           return GestureDetector(
             onTap: () {
               setState(() {
-                widget.selectedDay = day; // Atualiza o dia selecionado
+                widget.selectedDay = day;
               });
-              context
-                  .read<AgendaBloc>()
-                  .add(GetAllAgendasForDay(day)); // Carrega as agendas do dia
+              context.read<AgendaBloc>().add(GetAllAgendasForDay(day));
             },
             child: Container(
               width: 50,
@@ -270,106 +243,53 @@ class _AgendaPageState extends State<AgendaPage> {
     );
   }
 
-  // Função para criar os botões "Calendário" e "Agendar" na parte inferior
   Widget _buildFooterButtons() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
           CustomButton(
-              text: 'Calendário',
-              backgroundColor: personalColor,
-              onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => CalendarioPage(
-                        personalId: widget.personalData?['id'] ??
-                            widget.alunoData?[
-                                'id']))); // Navega para o calendário
-              }),
-          SizedBox(height: 16),
+            isThin: true,
+            text: 'Calendário',
+            backgroundColor: personalColor,
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => CalendarioPage(
+                      personalId: widget.personalData?['id'] ??
+                          widget.alunoData?['id'])));
+            },
+          ),
+          SizedBox(height: 10),
           CustomButtonBorda(
-              text: 'Agendar',
-              backgroundColor: Colors.white,
-              onPressed: () {
-                _showCreateAgendaDialog();
-              }),
+            isThin: true,
+            text: 'Agendar',
+            backgroundColor: Colors.white,
+            onPressed: () {
+              _showCreateAgendaDialog();
+            },
+          ),
         ],
       ),
     );
   }
 
-  void _showCreateAgendaDialog() {
-    final nomeController = TextEditingController();
-    final ruaController = TextEditingController();
-    final bairroController = TextEditingController();
-    final descricaoController = TextEditingController();
-    final horarioInicioController = TextEditingController();
-    final horarioFimController = TextEditingController();
+  void _showCreateAgendaDialog({AgendaModel? agenda}) {
+    final nomeController =
+        TextEditingController(text: agenda?.nomeEvento ?? '');
+    final ruaController = TextEditingController(text: agenda?.rua ?? '');
+    final bairroController = TextEditingController(text: agenda?.bairro ?? '');
+    final descricaoController =
+        TextEditingController(text: agenda?.descricao ?? '');
+    final horarioInicioController =
+        TextEditingController(text: agenda?.horarioInicio ?? '');
+    final horarioFimController =
+        TextEditingController(text: agenda?.horarioFim ?? '');
+    DateTime? selectedDate = agenda?.data;
 
-    TimeOfDay? selectedInicioTime;
-    TimeOfDay? selectedFimTime;
-    DateTime? selectedDate;
-
-    Future<void> _selectTime(
-        BuildContext context, TextEditingController controller,
-        {bool isStart = true}) async {
-      final TimeOfDay? picked = await showTimePicker(
-        context: context,
-        initialTime: isStart
-            ? (selectedInicioTime ?? TimeOfDay.now())
-            : (selectedFimTime ?? TimeOfDay.now()),
-        builder: (BuildContext context, Widget? child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-            child: child!,
-          );
-        },
-      );
-      if (picked != null) {
-        setState(() {
-          if (isStart) {
-            selectedInicioTime = picked;
-          } else {
-            selectedFimTime = picked;
-          }
-          controller.text = picked.format(context); // Formatando o horário
-        });
-      }
-    }
-
-    Future<void> _selectDate(BuildContext context) async {
-      if (Platform.isAndroid) {
-        final DateTime? picked = await showDatePicker(
-          context: context,
-          initialDate: selectedDate ?? DateTime.now(),
-          firstDate: DateTime(2020),
-          lastDate: DateTime(2030),
-        );
-        if (picked != null && picked != selectedDate) {
-          setState(() {
-            selectedDate = picked;
-          });
-        }
-      } else if (Platform.isIOS) {
-        showModalBottomSheet(
-          context: context,
-          builder: (BuildContext builder) {
-            return Container(
-              height: MediaQuery.of(context).copyWith().size.height / 3,
-              child: CupertinoDatePicker(
-                initialDateTime: selectedDate ?? DateTime.now(),
-                mode: CupertinoDatePickerMode.date,
-                onDateTimeChanged: (DateTime newDate) {
-                  setState(() {
-                    selectedDate = newDate;
-                  });
-                },
-              ),
-            );
-          },
-        );
-      }
-    }
+    TimeOfDay? selectedInicioTime =
+        agenda != null ? parseTime(agenda.horarioInicio) : null;
+    TimeOfDay? selectedFimTime =
+        agenda != null ? parseTime(agenda.horarioFim) : null;
 
     showDialog(
       context: context,
@@ -380,25 +300,20 @@ class _AgendaPageState extends State<AgendaPage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Agendar'),
-                  IconButton(
-                    icon: Icon(Icons.close),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              ),
+              title: Text(agenda != null ? 'Editar Evento' : 'Agendar'),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Botão para escolher a data
                     GestureDetector(
-                      onTap: () => _selectDate(context),
+                      onTap: () async {
+                        final DateTime? pickedDate = await _selectDate(context);
+                        if (pickedDate != null) {
+                          setState(() {
+                            selectedDate = pickedDate;
+                          });
+                        }
+                      },
                       child: AbsorbPointer(
                         child: TextFormField(
                           decoration: InputDecoration(
@@ -413,27 +328,30 @@ class _AgendaPageState extends State<AgendaPage> {
                       ),
                     ),
                     SizedBox(height: 12),
-
-                    // Nome do Evento
                     TextField(
                       controller: nomeController,
                       decoration: InputDecoration(labelText: 'Nome do Evento'),
                     ),
                     SizedBox(height: 12),
-
-                    // Horário Início e Fim
                     Row(
                       children: [
                         Expanded(
                           child: TextField(
                             readOnly: true,
                             controller: horarioInicioController,
-                            decoration: InputDecoration(
-                              labelText: 'Horário Início',
-                            ),
-                            onTap: () => _selectTime(
-                                context, horarioInicioController,
-                                isStart: true),
+                            decoration:
+                                InputDecoration(labelText: 'Horário Início'),
+                            onTap: () async {
+                              final TimeOfDay? pickedTime =
+                                  await _selectTime(context, true);
+                              if (pickedTime != null) {
+                                setState(() {
+                                  selectedInicioTime = pickedTime;
+                                  horarioInicioController.text =
+                                      pickedTime.format(context);
+                                });
+                              }
+                            },
                           ),
                         ),
                         SizedBox(width: 12),
@@ -441,33 +359,34 @@ class _AgendaPageState extends State<AgendaPage> {
                           child: TextField(
                             readOnly: true,
                             controller: horarioFimController,
-                            decoration: InputDecoration(
-                              labelText: 'Horário Fim',
-                            ),
-                            onTap: () => _selectTime(
-                                context, horarioFimController,
-                                isStart: false),
+                            decoration:
+                                InputDecoration(labelText: 'Horário Fim'),
+                            onTap: () async {
+                              final TimeOfDay? pickedTime =
+                                  await _selectTime(context, false);
+                              if (pickedTime != null) {
+                                setState(() {
+                                  selectedFimTime = pickedTime;
+                                  horarioFimController.text =
+                                      pickedTime.format(context);
+                                });
+                              }
+                            },
                           ),
                         ),
                       ],
                     ),
                     SizedBox(height: 12),
-
-                    // Rua Field
                     TextField(
                       controller: ruaController,
                       decoration: InputDecoration(labelText: 'Rua'),
                     ),
                     SizedBox(height: 12),
-
-                    // Bairro Field
                     TextField(
                       controller: bairroController,
                       decoration: InputDecoration(labelText: 'Bairro'),
                     ),
                     SizedBox(height: 12),
-
-                    // Descrição Field
                     TextField(
                       controller: descricaoController,
                       decoration: InputDecoration(labelText: 'Descrição'),
@@ -476,44 +395,121 @@ class _AgendaPageState extends State<AgendaPage> {
                 ),
               ),
               actions: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        final newAgenda = {
-                          'data': selectedDate != null
-                              ? selectedDate!.toIso8601String()
-                              : 'N/A',
-                          'nome-do-evento': nomeController.text,
-                          'horario-inicio': horarioInicioController.text,
-                          'horario-fim': horarioFimController.text,
-                          'rua': ruaController.text,
-                          'bairro': bairroController.text,
-                          'descricao': descricaoController.text,
-                          if (widget.personalData != null)
-                            'personal_id': widget.personalData!['id']
-                          else if (widget.alunoData != null)
-                            'aluno_id': widget.alunoData!['id'],
-                        };
-                        context.read<AgendaBloc>().add(CreateAgenda(newAgenda));
-                        Navigator.pop(context);
-                      },
-                      child: Text('Adicionar'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 80, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                    ),
-                  ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (selectedDate == null) return;
+
+                    final newAgenda = {
+                      'data': selectedDate!.toIso8601String(),
+                      'nome-do-evento': nomeController.text,
+                      'horario-inicio': horarioInicioController.text,
+                      'horario-fim': horarioFimController.text,
+                      'rua': ruaController.text,
+                      'bairro': bairroController.text,
+                      'descricao': descricaoController.text,
+                      if (widget.personalData != null)
+                        'personal_id': widget.personalData!['id'],
+                      if (agenda != null)
+                        'id': agenda.id // Adiciona o ID em caso de edição
+                    };
+
+                    if (agenda == null) {
+                      context.read<AgendaBloc>().add(CreateAgenda(newAgenda));
+                    } else {
+                      context
+                          .read<AgendaBloc>()
+                          .add(UpdateAgenda(agenda.id.toString(), newAgenda));
+                    }
+
+                    Navigator.pop(context);
+                  },
+                  child: Text(agenda != null ? 'Salvar' : 'Adicionar'),
                 ),
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  void _showEventDetails(AgendaModel agenda) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Text(agenda.nomeEvento),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Horário: ${agenda.horarioInicio} às ${agenda.horarioFim}'),
+              SizedBox(height: 8),
+              Text('Rua: ${agenda.rua}'),
+              Text('Bairro: ${agenda.bairro}'),
+              SizedBox(height: 8),
+              Text('Descrição: ${agenda.descricao ?? 'opcional'}'),
+              const SizedBox(
+                height: 20,
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                child: CustomButton(
+                  text: 'Editar',
+                  backgroundColor: personalColor,
+                  isThin: true,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showCreateAgendaDialog(agenda: agenda);
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                child: CustomButtonBorda(
+                  text: 'Excluir',
+                  backgroundColor: Colors.white,
+                  isThin: true,
+                  onPressed: () {
+                    print('Excluindo evento com id: ${agenda.id}');
+                    _deleteEvent(agenda);
+                    Navigator.pop(context);
+                  },
+                ),
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _deleteEvent(AgendaModel agenda) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmação'),
+          content: Text('Tem certeza que deseja excluir este evento?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                context.read<AgendaBloc>().add(DeleteAgenda(agenda.id
+                    .toString())); // Certifique-se que o ID está correto aqui
+                Navigator.pop(context); // Fechar o diálogo de confirmação
+              },
+              child: Text('Excluir'),
+            ),
+          ],
         );
       },
     );
