@@ -110,44 +110,47 @@ class _EditCurriculoViewState extends State<EditCurriculoView> {
     );
   }
 
-void _updateCurriculo() {
-  final endereco = widget.personalData['endereco'] ?? {};
-
-  // Conversão do ID para inteiro, caso necessário
-  int id = int.tryParse(widget.personalData['id'].toString()) ?? 0;
-
-  // Imprime o valor e o tipo do ID
-  print('Valor do id: $id');
-  print('Tipo do id: ${id.runtimeType}'); // Verifica o tipo do id
-
-  final updatedData = {
-    'id': id,  // Envia o ID como inteiro
-    'nome': widget.personalData['nome'], // Campo obrigatório
-    'email': widget.personalData['email'], // Campo obrigatório
-    'cpf': widget.personalData['cpf'], // Campo obrigatório
-    'foto': widget.personalData['foto'], // Opcional
-    'sobre': _sobreController.text, // Campo sendo atualizado
-    'confef': widget.personalData['confef'] ?? '000000', // Substitua pelo valor padrão se for null
-    'cref': widget.personalData['cref'], // Campo obrigatório
-    'especialidade-do-personal': _especialidadeController.text, // Campo sendo atualizado
-    'tipo_atendimento': widget.personalData['tipo_atendimento'] ?? 'presencial', // Adicione um valor padrão
-    'genero': widget.personalData['genero'] ?? '', // Opcional
-    'experimental_gratuita': widget.personalData['experimental_gratuita'] ?? '0', // Opcional
-    'endereco': {
-      'estado': endereco['estado'] ?? 'Estado Padrão', // Adicione valor padrão se estiver vazio
-      'cidade': endereco['cidade'] ?? 'Cidade Padrão', // Adicione valor padrão
-      'bairro': endereco['bairro'] ?? 'Bairro Padrão', // Adicione valor padrão
-      'rua': endereco['rua'] ?? 'Rua Padrão', // Adicione valor padrão
-      'numero': endereco['numero'] ?? 'S/N', // Adicione valor padrão
-      'complemento': endereco['complemento'] ?? '', // Opcional
+  void _updateCurriculo() {
+    if (_especialidadeController.text.isEmpty ||
+        _sobreController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Preencha todos os campos obrigatórios.')),
+      );
+      return;
     }
-  };
 
-  print('Dados enviados para atualização: $updatedData');
+    final endereco = widget.personalData['endereco'] ?? {};
+    int id = int.tryParse(widget.personalData['id'].toString()) ?? 0;
 
-  context.read<PersonalBloc>().add(UpdatePersonalProfile(updatedData: updatedData));
-}
+    final updatedData = {
+      'id': id,
+      'nome': widget.personalData['nome'],
+      'email': widget.personalData['email'],
+      'cpf': widget.personalData['cpf'],
+      'foto': widget.personalData['foto'],
+      'sobre': _sobreController.text,
+      'confef': widget.personalData['confef'] ?? '000000',
+      'cref': widget.personalData['cref'],
+      'especialidade-do-personal': _especialidadeController.text,
+      'tipo_atendimento':
+          widget.personalData['tipo_atendimento'] ?? 'presencial',
+      'genero': widget.personalData['genero'] ?? '',
+      'experimental_gratuita':
+          widget.personalData['experimental_gratuita'] ?? '0',
+      'endereco': {
+        'estado': endereco['estado'] ?? 'Estado Padrão',
+        'cidade': endereco['cidade'] ?? 'Cidade Padrão',
+        'bairro': endereco['bairro'] ?? 'Bairro Padrão',
+        'rua': endereco['rua'] ?? 'Rua Padrão',
+        'numero': endereco['numero'] ?? 'S/N',
+        'complemento': endereco['complemento'] ?? '',
+      }
+    };
 
+    print('Dados enviados para atualização: $updatedData');
 
-
+    context
+        .read<PersonalBloc>()
+        .add(UpdatePersonalProfile(updatedData: updatedData));
+  }
 }
