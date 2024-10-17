@@ -52,6 +52,8 @@ class _ChatScreenPersonalState extends State<ChatScreenPersonal> {
     });
   }
 
+  
+
   // Função para selecionar um arquivo
   Future<void> _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
@@ -124,9 +126,20 @@ class _ChatScreenPersonalState extends State<ChatScreenPersonal> {
                             padding: EdgeInsets.symmetric(
                                 vertical: 10.0, horizontal: 14.0),
                             decoration: BoxDecoration(
-                              color: isSender
-                                  ? personalColor
-                                  : Colors.grey[300],
+                              // Aplicando o gradiente para mensagens do remetente (isSender == true)
+                              gradient: isSender
+                                  ? LinearGradient(
+                                      colors: [
+                                        Color(0xFF00B4DB),
+                                        Color(0xFF0083B0)
+                                      ], // Azul para exemplo
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    )
+                                  : null, // Usamos a cor sólida para as mensagens recebidas
+                              color: !isSender
+                                  ? Colors.grey[300]
+                                  : null, // Fallback para as mensagens recebidas
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Column(
